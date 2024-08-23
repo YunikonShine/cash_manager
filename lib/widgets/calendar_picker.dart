@@ -1,15 +1,43 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class CalendarPicker extends StatefulWidget {
-  const CalendarPicker({super.key});
+  const CalendarPicker({super.key, required this.onTap});
+
+  final Function(int i) onTap;
 
   @override
   CalendarPickerState createState() => CalendarPickerState();
 }
 
-class CalendarPickerState extends State<CalendarPicker> {
+class CalendarPickerState extends State<CalendarPicker>
+    with SingleTickerProviderStateMixin {
   int _currentYear = DateTime.now().year;
+  late AnimationController controller;
+  late Animation<double> scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    controller = AnimationController(
+      vsync: this,
+      duration: const Duration(
+        milliseconds: 150,
+      ),
+    );
+    scaleAnimation = CurvedAnimation(
+      parent: controller,
+      curve: Curves.fastOutSlowIn,
+    );
+
+    controller.addListener(() {
+      setState(() {});
+    });
+
+    controller.forward();
+  }
 
   _nextYear() {
     setState(() {
@@ -26,128 +54,183 @@ class CalendarPickerState extends State<CalendarPicker> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 10),
-      child: Column(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(10),
-                topRight: Radius.circular(10),
+      padding: const EdgeInsets.only(
+        top: 100,
+        left: 30,
+        right: 30,
+      ),
+      child: ScaleTransition(
+        scale: scaleAnimation,
+        child: Column(
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  topRight: Radius.circular(10),
+                ),
+                color: Colors.purple,
               ),
-              color: const Color(0xFF4C4C4C),
-            ),
-            width: (MediaQuery.of(context).size.width * 80) / 100,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                IconButton(
-                  onPressed: _previousYear,
-                  icon: Icon(
-                    CupertinoIcons.left_chevron,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  IconButton(
+                    onPressed: _previousYear,
+                    icon: const Icon(
+                      CupertinoIcons.left_chevron,
+                      color: Colors.white,
+                      size: 24,
+                    ),
                   ),
-                ),
-                Text(_currentYear.toString()),
-                IconButton(
-                  onPressed: _nextYear,
-                  icon: Icon(
-                    CupertinoIcons.right_chevron,
+                  Text(
+                    _currentYear.toString(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                    ),
                   ),
+                  IconButton(
+                    onPressed: _nextYear,
+                    icon: const Icon(
+                      CupertinoIcons.right_chevron,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.only(
+                left: 15,
+                right: 15,
+                top: 20,
+                bottom: 20,
+              ),
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(10),
+                  bottomRight: Radius.circular(10),
                 ),
-              ],
-            ),
-          ),
-          Container(
-            width: (MediaQuery.of(context).size.width * 80) / 100,
-            color: Colors.red,
-            padding: EdgeInsets.only(
-              top: 10,
-              bottom: 10,
-            ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Material(
-                      color: Colors.red,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: const Radius.circular(50),
-                            bottomRight: const Radius.circular(50),
+                color: Color(0xFF4C4C4C),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      for (int i = 0; i < 6; i++)
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(25),
+                            ),
+                            onTap: () => widget.onTap(i + 1),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              alignment: Alignment.center,
+                              child: Text(
+                                DateFormat('MMM').format(DateTime(0, i + 1)),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
                           ),
-                          color: const Color(0xFF4C4C4C),
                         ),
-                        child: InkWell(
-                          onTap: () => {},
-                          child: Text("JAN"),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      for (int i = 6; i < 12; i++)
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(25),
+                            ),
+                            onTap: () => widget.onTap(i + 1),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              alignment: Alignment.center,
+                              child: Text(
+                                DateFormat('MMM').format(DateTime(0, i + 1)),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: 10,
+                      right: 15,
                     ),
-                    Material(
-                      color: Colors.red,
-                      child: InkWell(
-                        onTap: () => {},
-                        child: Text("JAN"),
-                      ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            right: 15,
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: const BorderRadius.all(
+                                Radius.circular(25),
+                              ),
+                              onTap: () => widget.onTap(DateTime.now().month),
+                              child: Container(
+                                height: 40,
+                                alignment: Alignment.center,
+                                child: const Text(
+                                  "Mês atual",
+                                  style: TextStyle(
+                                    color: Color(0xFFE75DFF),
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(25),
+                            ),
+                            onTap: () => Navigator.pop(context),
+                            child: Container(
+                              height: 40,
+                              alignment: Alignment.center,
+                              child: const Text(
+                                "Cancelar",
+                                style: TextStyle(
+                                  color: Color(0xFFE75DFF),
+                                  fontSize: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    Material(
-                      color: Colors.red,
-                      child: InkWell(
-                        onTap: () => {},
-                        child: Text("JAN"),
-                      ),
-                    ),
-                    Material(
-                      color: Colors.red,
-                      child: InkWell(
-                        onTap: () => {},
-                        child: Text("JAN"),
-                      ),
-                    ),
-                    Material(
-                      color: Colors.red,
-                      child: InkWell(
-                        onTap: () => {},
-                        child: Text("JAN"),
-                      ),
-                    ),
-                    Material(
-                      color: Colors.red,
-                      child: InkWell(
-                        onTap: () => {},
-                        child: Text("JAN"),
-                      ),
-                    ),
-                  ],
-                ),
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.spaceAround,
-                //   children: [
-                //     Text("JAN"),
-                //     Text("JAN"),
-                //     Text("JAN"),
-                //     Text("JAN"),
-                //     Text("JAN"),
-                //     Text("JAN"),
-                //   ],
-                // ),
-              ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          Container(
-            width: (MediaQuery.of(context).size.width * 80) / 100,
-            color: Colors.red,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text("JAN"),
-                Text("JAN"),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

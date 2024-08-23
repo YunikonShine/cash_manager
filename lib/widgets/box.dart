@@ -4,14 +4,14 @@ class Box extends StatelessWidget {
   const Box({
     super.key,
     required this.width,
-    required this.height,
+    this.height,
     required this.child,
     this.top = false,
     this.padding = EdgeInsets.zero,
   });
 
   final int width;
-  final double height;
+  final double? height;
   final Widget child;
   final bool top;
   final EdgeInsets padding;
