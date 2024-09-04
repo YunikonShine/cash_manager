@@ -5,11 +5,11 @@ class DBVersion1 {
     await db.execute(
         "CREATE TABLE banks ( id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, icon TEXT NOT NULL, color TEXT NOT NULL )");
     await db.execute(
-        "CREATE TABLE accounts ( id INTEGER PRIMARY KEY AUTOINCREMENT, desciption TEXT NOT NULL, balance REAL NOT NULL, initial_balance REAL NOT NULL, type INT NOT NULL, color TEXT NOT NULL, bank_id INT NOT NULL, FOREIGN KEY (bank_id) REFERENCES banks (id) )");
+        "CREATE TABLE accounts ( id INTEGER PRIMARY KEY AUTOINCREMENT, description TEXT NOT NULL, balance REAL NOT NULL, initial_balance REAL NOT NULL, type INT NOT NULL, color TEXT NOT NULL, bank_id INT NOT NULL, FOREIGN KEY (bank_id) REFERENCES banks (id) )");
     await db.execute(
         "CREATE TABLE transactions ( id INTEGER PRIMARY KEY AUTOINCREMENT, amount REAL NOT NULL, type REAL NOT NULL )");
     await db.execute(
-        "CREATE TABLE cards ( id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, amount_limit REAL NOT NULL, icon TEXT NOT NULL, account_id INT NOT NULL, FOREIGN KEY (account_id) REFERENCES accounts (id) )");
+        "CREATE TABLE cards ( id INTEGER PRIMARY KEY AUTOINCREMENT, description TEXT NOT NULL, amount_limit REAL NOT NULL, close_date INTEGER NOT NULL, due_date INTEGER NOT NULL, brand INTEGER NOT NULL, account_id INT NOT NULL, FOREIGN KEY (account_id) REFERENCES accounts (id) )");
 
     await db.execute(
         "CREATE TABLE card_transaction ( card_id INT NOT NULL, transaction_id INT NOT NULL, FOREIGN KEY (card_id) REFERENCES cards (id), FOREIGN KEY (transaction_id) REFERENCES transactions (id) )");

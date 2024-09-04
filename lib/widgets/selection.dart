@@ -9,10 +9,12 @@ class Selection extends StatefulWidget {
     super.key,
     required this.onClick,
     required this.items,
+    this.emptyList = "",
   });
 
   final Function(dynamic) onClick;
   final Future<List<SelectionItem>> items;
+  final String emptyList;
 
   @override
   SelectionState createState() => SelectionState();
@@ -37,21 +39,33 @@ class SelectionState extends State<Selection> {
             future: widget.items,
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                return ListView.builder(
-                  itemCount: snapshot.data!.length,
-                  itemBuilder: (context, index) {
-                    SelectionItem selectionItem = snapshot.data![index];
-                    return InsertField(
-                      startImage: selectionItem.image,
-                      startIcon: selectionItem.icon,
-                      startText: selectionItem.name,
-                      finalIcon: FontAwesomeIcons.chevronRight,
-                      onClick: () => widget.onClick(selectionItem),
-                    );
-                  },
-                );
+                return snapshot.data!.isNotEmpty
+                    ? ListView.builder(
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, index) {
+                          SelectionItem selectionItem = snapshot.data![index];
+                          return InsertField(
+                            startImage: selectionItem.image,
+                            startIcon: selectionItem.icon,
+                            startText: selectionItem.name,
+                            finalIcon: FontAwesomeIcons.chevronRight,
+                            onClick: () => widget.onClick(selectionItem),
+                          );
+                        },
+                      )
+                    : Padding(
+                        padding: const EdgeInsets.only(top: 25),
+                        child: Text(
+                          widget.emptyList,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 18,
+                          ),
+                        ),
+                      );
               } else {
-                return Text('Calculating answer...');
+                return Container();
               }
             },
           ),

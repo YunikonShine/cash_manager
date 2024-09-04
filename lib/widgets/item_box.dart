@@ -1,4 +1,4 @@
-import 'package:cash_manager/models/account.dart';
+import 'package:cash_manager/models/selection_item.dart';
 import 'package:cash_manager/widgets/box.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -8,13 +8,17 @@ class ItemBox extends StatefulWidget {
   const ItemBox({
     super.key,
     required this.name,
-    required this.accounts,
+    required this.items,
     required this.onClick,
+    required this.buttonText,
+    required this.icon,
   });
 
   final String name;
-  final List<Account> accounts;
+  final List<SelectionItem> items;
   final VoidCallback onClick;
+  final String buttonText;
+  final IconData icon;
 
   @override
   ItemBoxState createState() => ItemBoxState();
@@ -27,8 +31,8 @@ class ItemBoxState extends State<ItemBox> {
   @override
   void initState() {
     super.initState();
-    for (Account a in widget.accounts) {
-      totalAccount += a.balance;
+    for (SelectionItem a in widget.items) {
+      totalAccount += a.amount!;
     }
   }
 
@@ -57,7 +61,7 @@ class ItemBoxState extends State<ItemBox> {
                 ),
               ),
               Icon(
-                FontAwesomeIcons.buildingColumns,
+                widget.icon,
                 color: Colors.grey,
                 size: 18,
               ),
@@ -75,7 +79,7 @@ class ItemBoxState extends State<ItemBox> {
           top: true,
           child: Column(
             children: [
-              for (Account account in widget.accounts)
+              for (SelectionItem item in widget.items)
                 Container(
                   height: 60,
                   decoration: const BoxDecoration(
@@ -96,7 +100,7 @@ class ItemBoxState extends State<ItemBox> {
                             child: Image(
                               width: 40,
                               height: 40,
-                              image: AssetImage("assets/banks/nubank.png"),
+                              image: item.image!,
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -108,16 +112,16 @@ class ItemBoxState extends State<ItemBox> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  account.desciption,
+                                  item.name!,
                                   style: const TextStyle(
                                     color: Colors.grey,
                                     fontSize: 18,
                                   ),
                                 ),
                                 Text(
-                                  formatCurrency.format(account.balance),
+                                  formatCurrency.format(item.amount!),
                                   style: TextStyle(
-                                    color: account.balance >= 0
+                                    color: item.amount! >= 0
                                         ? Colors.green
                                         : Colors.red,
                                     fontSize: 16,
@@ -128,21 +132,19 @@ class ItemBoxState extends State<ItemBox> {
                           ),
                         ],
                       ),
-                      Container(
-                        child: IconButton(
-                          onPressed: () => {},
-                          icon: Icon(
-                            FontAwesomeIcons.plus,
-                            color: Colors.purple,
-                            size: 22,
-                          ),
+                      IconButton(
+                        onPressed: () => {},
+                        icon: const Icon(
+                          FontAwesomeIcons.plus,
+                          color: Colors.purple,
+                          size: 22,
                         ),
                       ),
                     ],
                   ),
                 ),
               Container(
-                padding: EdgeInsets.only(
+                padding: const EdgeInsets.only(
                   top: 10,
                   bottom: 10,
                 ),
@@ -154,7 +156,7 @@ class ItemBoxState extends State<ItemBox> {
                     ),
                   ),
                   child: Text(
-                    "Cadastar conta",
+                    widget.buttonText,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,

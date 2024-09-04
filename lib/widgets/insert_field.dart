@@ -12,6 +12,7 @@ class InsertField extends StatefulWidget {
     this.onClick,
     this.height = 60,
     this.color,
+    this.finalText,
   });
 
   final IconData? startIcon;
@@ -23,6 +24,7 @@ class InsertField extends StatefulWidget {
   final VoidCallback? onClick;
   final double height;
   final Color? color;
+  final String? finalText;
 
   @override
   InsertFieldState createState() => InsertFieldState();
@@ -79,20 +81,20 @@ class InsertFieldState extends State<InsertField> {
                               fontSize: 18,
                             ),
                           )
-                        : Container(
+                        : SizedBox(
                             width: 250,
                             child: TextField(
                               focusNode: _focusNode,
                               controller: widget.controller,
-                              decoration: new InputDecoration.collapsed(
+                              decoration: InputDecoration.collapsed(
                                 hintText: widget.hint,
-                                hintStyle: TextStyle(
+                                hintStyle: const TextStyle(
                                   color: Colors.grey,
                                   fontWeight: FontWeight.normal,
                                 ),
                               ),
                               cursorColor: Colors.deepPurple,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 18,
                               ),
@@ -112,6 +114,18 @@ class InsertFieldState extends State<InsertField> {
                           border: Border.all(
                             width: 2,
                             color: Colors.grey,
+                          ),
+                        ),
+                      ),
+                    if (widget.finalText != null)
+                      SizedBox(
+                        width: 25,
+                        height: 25,
+                        child: Text(
+                          widget.finalText!,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 18,
                           ),
                         ),
                       ),

@@ -1,11 +1,14 @@
 import 'package:cash_manager/helpers/hex_color.dart';
 import 'package:cash_manager/models/account.dart';
+import 'package:cash_manager/models/credit_card.dart';
 import 'package:cash_manager/models/selection_item.dart';
 import 'package:cash_manager/services/database/queries/account_query.dart';
 import 'package:cash_manager/services/database/queries/bank_query.dart';
+import 'package:cash_manager/services/database/queries/credit_card_query.dart';
 import 'package:cash_manager/widgets/bank_color_picker.dart';
 import 'package:cash_manager/widgets/box.dart';
 import 'package:cash_manager/widgets/calculator.dart';
+import 'package:cash_manager/widgets/calendar_picker.dart';
 import 'package:cash_manager/widgets/custom_toast.dart';
 import 'package:cash_manager/widgets/header.dart';
 import 'package:cash_manager/widgets/insert_field.dart';
@@ -15,8 +18,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 
-class AccountScreen extends StatefulWidget {
-  const AccountScreen({
+class CardScreen extends StatefulWidget {
+  const CardScreen({
     super.key,
     required this.onPop,
   });
@@ -24,21 +27,22 @@ class AccountScreen extends StatefulWidget {
   final Function onPop;
 
   @override
-  AccountScreenState createState() => AccountScreenState();
+  CardScreenState createState() => CardScreenState();
 }
 
-class AccountScreenState extends State<AccountScreen> {
-  double accountTotal = 0;
+class CardScreenState extends State<CardScreen> {
+  double limitTotal = 0;
   final _formatCurrency = NumberFormat.simpleCurrency(locale: "pt_BR");
   final _descriptionController = TextEditingController();
 
-  ImageProvider<Object>? _bankIcon;
-  String? _bankName;
-  int? _bankId;
-  int? _accountId;
+  ImageProvider<Object>? _accountBankIcon;
   String? _accountName;
-  IconData? _accountIcon = FontAwesomeIcons.wallet;
-  Color? _bankColor;
+  int? _accountId;
+  int? _cardBrandId;
+  String? _cardBrandName;
+  IconData? _cardBrandIcon = FontAwesomeIcons.creditCard;
+  DateTime? _closeDate;
+  DateTime? _dueDate;
 
   late FToast fToast;
 
@@ -55,33 +59,36 @@ class AccountScreenState extends State<AccountScreen> {
     super.dispose();
   }
 
-  _selectBank(SelectionItem bank) {
+  _selectAccount(SelectionItem account) {
     FocusScope.of(context).requestFocus(FocusNode());
     setState(() {
-      _bankIcon = bank.image;
-      _bankName = bank.name;
-      _bankId = bank.id;
-      _bankColor = HexColor.fromHex(bank.color!);
+      _accountBankIcon = account.image;
+      _accountName = account.name;
+      _accountId = account.id;
     });
     Navigator.pop(context);
   }
 
-  _selectColor(Color color) {
+  _selectCardBrand(SelectionItem cardBrand) {
     FocusScope.of(context).requestFocus(FocusNode());
     setState(() {
-      _bankColor = color;
+      _cardBrandId = cardBrand.id;
+      _cardBrandName = cardBrand.name;
+      _cardBrandIcon = cardBrand.icon;
     });
     Navigator.pop(context);
   }
 
-  _selectType(SelectionItem accountType) {
-    FocusScope.of(context).requestFocus(FocusNode());
+  _selectCloseDate(DateTime date) {
     setState(() {
-      _accountId = accountType.id;
-      _accountName = accountType.name;
-      _accountIcon = accountType.icon;
+      _closeDate = date;
     });
-    Navigator.pop(context);
+  }
+
+  _selectDueDate(DateTime date) {
+    setState(() {
+      _dueDate = date;
+    });
   }
 
   _showToast(String message) {
@@ -109,31 +116,33 @@ class AccountScreenState extends State<AccountScreen> {
   }
 
   _saveAccount() {
-    if (_bankId == null) {
-      _showToast("Selecione o banco");
-    } else if (_descriptionController.text.isEmpty) {
+    if (_descriptionController.text.isEmpty) {
       _showToast("Preencha a descrição");
     } else if (_accountId == null) {
+      _showToast("Selecione uma conta");
+    } else if (_cardBrandId == null) {
       _showToast("Selecione o tipo de conta");
-    } else if (_bankColor == null) {
-      _showToast("Selecione a cor");
+    } else if (_closeDate == null) {
+      _showToast("Selecione o tipo de conta");
+    } else if (_dueDate == null) {
+      _showToast("Selecione o tipo de conta");
     } else {
-      Account account = Account(
-        bankId: _bankId!,
-        color: _bankColor!.toHex(),
-        description: _descriptionController.text.trim(),
-        type: _accountId!,
-        balance: accountTotal,
-        initialBalance: accountTotal,
+      CreditCard card = CreditCard(
+        description: _descriptionController.text,
+        limit: limitTotal,
+        closeDate: _closeDate!.day,
+        dueDate: _dueDate!.day,
+        brand: _cardBrandId!,
+        accountId: _accountId!,
       );
-      AccountQuery.createAccount(account);
+      CreditCardQuery.createCreditCard(card);
       Navigator.pop(context);
     }
   }
 
   _setBalance(double balance) {
     setState(() {
-      accountTotal = balance;
+      limitTotal = balance;
       Navigator.pop(context);
     });
   }
@@ -147,13 +156,13 @@ class AccountScreenState extends State<AccountScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Header(
-              text: "Nova Conta",
+              text: "Novo Cartão de Crédito",
             ),
             GestureDetector(
               onTap: () => showDialog<String>(
                 context: context,
                 builder: (BuildContext context) => Calculator(
-                  balance: accountTotal,
+                  balance: limitTotal,
                   onClick: _setBalance,
                 ),
               ),
@@ -166,14 +175,14 @@ class AccountScreenState extends State<AccountScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      "Saldo atual",
+                      "Limite",
                       style: TextStyle(
                         color: Color(0xA69E9E9E),
                         fontSize: 16,
                       ),
                     ),
                     Text(
-                      _formatCurrency.format(accountTotal),
+                      _formatCurrency.format(limitTotal),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 32,
@@ -197,49 +206,66 @@ class AccountScreenState extends State<AccountScreen> {
                           top: 10,
                         ),
                         child: InsertField(
-                          startImage: _bankIcon,
-                          startIcon: _bankIcon == null
-                              ? FontAwesomeIcons.buildingColumns
-                              : null,
-                          startText: _bankName ?? "Escolha um banco",
-                          finalIcon: FontAwesomeIcons.chevronRight,
-                          onClick: () => showDialog<String>(
-                            context: context,
-                            builder: (BuildContext context) => Selection(
-                              onClick: (bank) => _selectBank(bank),
-                              items: BankQuery.selectSelectionItems(),
-                            ),
-                          ),
+                          startIcon: FontAwesomeIcons.pen,
+                          hint: "Descrição",
+                          controller: _descriptionController,
                         ),
                       ),
                       InsertField(
-                        startIcon: FontAwesomeIcons.pen,
-                        hint: "Descrição",
-                        controller: _descriptionController,
-                      ),
-                      InsertField(
-                        startIcon: _accountIcon,
-                        startText: _accountName ?? "Tipo de conta",
+                        startImage: _accountBankIcon,
+                        startIcon: _accountBankIcon == null
+                            ? FontAwesomeIcons.buildingColumns
+                            : null,
+                        startText: _accountName ?? "Escolha uma conta",
                         finalIcon: FontAwesomeIcons.chevronRight,
                         onClick: () => showDialog<String>(
                           context: context,
                           builder: (BuildContext context) => Selection(
-                            onClick: (type) => _selectType(type),
-                            items:
-                                Future.value(SelectionItem.fromAccountTypes()),
+                            onClick: (bank) => _selectAccount(bank),
+                            items: AccountQuery.selectSelectionItems(),
+                            emptyList: "Crie uma conta para continuar",
                           ),
                         ),
                       ),
                       InsertField(
-                        startIcon: FontAwesomeIcons.swatchbook,
-                        startText: "Cor",
-                        color: _bankColor,
+                        startIcon: _cardBrandIcon,
+                        startText: _cardBrandName ?? "Bandeira",
                         finalIcon: FontAwesomeIcons.chevronRight,
                         onClick: () => showDialog<String>(
                           context: context,
-                          builder: (BuildContext context) => BankColorPicker(
-                            color: _bankColor,
-                            onChange: (color) => _selectColor(color),
+                          builder: (BuildContext context) => Selection(
+                            onClick: (type) => _selectCardBrand(type),
+                            items: Future.value(SelectionItem.fromCardBrands()),
+                          ),
+                        ),
+                      ),
+                      InsertField(
+                        startIcon: FontAwesomeIcons.solidCalendarCheck,
+                        startText: "Data de fechamento",
+                        finalText: _closeDate != null
+                            ? DateFormat('dd').format(_closeDate!)
+                            : null,
+                        finalIcon: FontAwesomeIcons.chevronRight,
+                        onClick: () => showDialog<String>(
+                          context: context,
+                          builder: (BuildContext context) => CalendarPicker(
+                            onTap: _selectCloseDate,
+                            month: false,
+                          ),
+                        ),
+                      ),
+                      InsertField(
+                        startIcon: FontAwesomeIcons.calendarDay,
+                        startText: "Data de vencimento",
+                        finalText: _dueDate != null
+                            ? DateFormat('dd').format(_dueDate!)
+                            : null,
+                        finalIcon: FontAwesomeIcons.chevronRight,
+                        onClick: () => showDialog<String>(
+                          context: context,
+                          builder: (BuildContext context) => CalendarPicker(
+                            onTap: _selectDueDate,
+                            month: false,
                           ),
                         ),
                       ),

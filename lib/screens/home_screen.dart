@@ -1,8 +1,10 @@
-import 'dart:math';
-
 import 'package:cash_manager/models/account.dart';
+import 'package:cash_manager/models/credit_card.dart';
+import 'package:cash_manager/models/selection_item.dart';
 import 'package:cash_manager/screens/account_screen.dart';
+import 'package:cash_manager/screens/card_screen.dart';
 import 'package:cash_manager/services/database/queries/account_query.dart';
+import 'package:cash_manager/services/database/queries/credit_card_query.dart';
 import 'package:cash_manager/widgets/balance.dart';
 import 'package:cash_manager/widgets/empty_box.dart';
 import 'package:cash_manager/widgets/item_box.dart';
@@ -18,7 +20,7 @@ class HomeScreen extends StatefulWidget {
 
 class HomeScreenState extends State<HomeScreen> {
   late List<Account> _accounts = [];
-  late List<String> _cards = [];
+  late List<CreditCard> _cards = [];
   Future<List<String>> _controller = Future.value([]);
 
   @override
@@ -29,9 +31,11 @@ class HomeScreenState extends State<HomeScreen> {
 
   Future<void> _pullRefresh() async {
     List<Account> freshAccounts = await AccountQuery.selectAccounts();
+    List<CreditCard> freshCards = await CreditCardQuery.selectCreditCards();
     setState(() {
       _controller = Future.value([""]);
       _accounts = freshAccounts;
+      _cards = freshCards;
     });
   }
 
@@ -174,7 +178,9 @@ class HomeScreenState extends State<HomeScreen> {
                           )
                         : ItemBox(
                             name: "Contas",
-                            accounts: _accounts,
+                            buttonText: "Cadastrar conta",
+                            icon: FontAwesomeIcons.buildingColumns,
+                            items: SelectionItem.fromAccounts(_accounts),
                             onClick: () => Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -187,12 +193,32 @@ class HomeScreenState extends State<HomeScreen> {
                     _cards.isEmpty
                         ? EmptyBox(
                             name: "Cartões",
-                            icon: FontAwesomeIcons.creditCard,
+                            icon: FontAwesomeIcons.solidCreditCard,
                             emptyText: "Você não tem cartões cadastrados",
                             buttonText: "Cadastrar cartão",
-                            onClick: () => {},
+                            onClick: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => CardScreen(
+                                  onPop: _pullRefresh,
+                                ),
+                              ),
+                            ),
                           )
-                        : Container()
+                        : ItemBox(
+                            name: "Cartões",
+                            buttonText: "Cadastrar cartão",
+                            icon: FontAwesomeIcons.creditCard,
+                            items: SelectionItem.fromCreditCards(_cards),
+                            onClick: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => CardScreen(
+                                  onPop: _pullRefresh,
+                                ),
+                              ),
+                            ),
+                          ),
                   ],
                 );
               },

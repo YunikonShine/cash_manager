@@ -17,4 +17,12 @@ class BankQuery {
 
     return SelectionItem.fromBanks(banks);
   }
+
+  static Future<Bank> getBank(int id) async {
+    Database? db = await DatabaseConnection.instance.database;
+    List<Map<String, Object?>>? result =
+        await db?.query(_tableName, where: 'id = ?', whereArgs: [id]);
+
+    return Bank.fromMap(result![0]);
+  }
 }
