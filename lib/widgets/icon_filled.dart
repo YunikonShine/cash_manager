@@ -39,7 +39,7 @@ class IconFilled extends StatelessWidget {
             child: Icon(
               icon,
               color: color,
-              size: 50,
+              size: 40,
             ),
           )
         ],

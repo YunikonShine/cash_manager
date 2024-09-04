@@ -1,9 +1,12 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 
 class CalendarPicker extends StatefulWidget {
-  const CalendarPicker({super.key, required this.onTap});
+  const CalendarPicker({
+    super.key,
+    required this.onTap,
+  });
 
   final Function(int i) onTap;
 
@@ -77,7 +80,7 @@ class CalendarPickerState extends State<CalendarPicker>
                   IconButton(
                     onPressed: _previousYear,
                     icon: const Icon(
-                      CupertinoIcons.left_chevron,
+                      FontAwesomeIcons.chevronLeft,
                       color: Colors.white,
                       size: 24,
                     ),
@@ -92,7 +95,7 @@ class CalendarPickerState extends State<CalendarPicker>
                   IconButton(
                     onPressed: _nextYear,
                     icon: const Icon(
-                      CupertinoIcons.right_chevron,
+                      FontAwesomeIcons.chevronRight,
                       color: Colors.white,
                       size: 24,
                     ),

@@ -1,4 +1,4 @@
-import 'package:cash_manager/screens/home.dart';
+import 'package:cash_manager/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
       ),
       home: const Scaffold(
         backgroundColor: Color(0xFF141414),
-        body: Home(),
+        body: HomeScreen(),
       ),
     );
   }

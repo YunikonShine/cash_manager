@@ -3,15 +3,17 @@ import 'package:sqflite/sqflite.dart';
 class DBVersion1 {
   static Future<void> dbUpdatesVersion(Database db) async {
     await db.execute(
-        'CREATE TABLE accounts ( id INT NOT NULL, name TEXT NOT NULL, balance REAL NOT NULL, icon TEXT NOT NULL, PRIMARY KEY (id) )');
+        "CREATE TABLE banks ( id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, icon TEXT NOT NULL, color TEXT NOT NULL )");
     await db.execute(
-        'CREATE TABLE transactions ( id INT NOT NULL, amount REAL NOT NULL, type REAL NOT NULL, PRIMARY KEY (id) )');
+        "CREATE TABLE accounts ( id INTEGER PRIMARY KEY AUTOINCREMENT, desciption TEXT NOT NULL, balance REAL NOT NULL, type INT NOT NULL, color TEXT NOT NULL, bank_id INT NOT NULL, FOREIGN KEY (bank_id) REFERENCES banks (id) )");
     await db.execute(
-        'CREATE TABLE cards ( id INT NOT NULL, name TEXT NOT NULL, limit REAL NOT NULL, icon TEXT NOT NULL, account_id INT NOT NULL, PRIMARY KEY (id), FOREIGN KEY (account_id) REFERENCES accounts (id) )');
+        "CREATE TABLE transactions ( id INTEGER PRIMARY KEY AUTOINCREMENT, amount REAL NOT NULL, type REAL NOT NULL )");
+    await db.execute(
+        "CREATE TABLE cards ( id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, amount_limit REAL NOT NULL, icon TEXT NOT NULL, account_id INT NOT NULL, FOREIGN KEY (account_id) REFERENCES accounts (id) )");
 
     await db.execute(
-        'CREATE TABLE card_transaction ( id INT NOT NULL, id INT NOT NULL FOREIGN KEY (id) REFERENCES cards (id), FOREIGN KEY (id) REFERENCES transactions (id) )');
+        "CREATE TABLE card_transaction ( card_id INT NOT NULL, transaction_id INT NOT NULL, FOREIGN KEY (card_id) REFERENCES cards (id), FOREIGN KEY (transaction_id) REFERENCES transactions (id) )");
     await db.execute(
-        'CREATE TABLE account_transaction ( id INT NOT NULL, id INT NOT NULL FOREIGN KEY (id) REFERENCES transactions (id), FOREIGN KEY (id) REFERENCES accounts (id) )');
+        "CREATE TABLE account_transaction ( account_id INT NOT NULL, transaction_id INT NOT NULL, FOREIGN KEY (account_id) REFERENCES transactions (id), FOREIGN KEY (transaction_id) REFERENCES accounts (id) )");
   }
 }

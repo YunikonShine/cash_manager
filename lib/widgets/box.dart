@@ -7,14 +7,18 @@ class Box extends StatelessWidget {
     this.height,
     required this.child,
     this.top = false,
+    this.bottom = true,
     this.padding = EdgeInsets.zero,
+    this.internalPadding = const EdgeInsets.all(25),
   });
 
   final int width;
   final double? height;
   final Widget child;
   final bool top;
+  final bool bottom;
   final EdgeInsets padding;
+  final EdgeInsets internalPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -26,15 +30,15 @@ class Box extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.only(
-              bottomLeft: const Radius.circular(50),
-              bottomRight: const Radius.circular(50),
+              bottomLeft: Radius.circular(bottom ? 50 : 0),
+              bottomRight: Radius.circular(bottom ? 50 : 0),
               topLeft: Radius.circular(top ? 50 : 0),
               topRight: Radius.circular(top ? 50 : 0),
             ),
             color: const Color(0xFF4C4C4C),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(25),
+            padding: internalPadding,
             child: child,
           ),
         ),

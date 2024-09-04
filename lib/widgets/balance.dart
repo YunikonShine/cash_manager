@@ -1,8 +1,8 @@
 import 'package:cash_manager/widgets/box.dart';
 import 'package:cash_manager/widgets/calendar_picker.dart';
 import 'package:cash_manager/widgets/icon_filled.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 
 class Balance extends StatefulWidget {
@@ -62,7 +62,7 @@ class BalanceState extends State<Balance> {
                 const Padding(
                   padding: EdgeInsets.only(left: 10),
                   child: Icon(
-                    CupertinoIcons.chevron_down,
+                    FontAwesomeIcons.chevronDown,
                     color: Colors.white,
                   ),
                 ),
@@ -86,7 +86,7 @@ class BalanceState extends State<Balance> {
           IconButton(
             onPressed: _updateViewStyle,
             icon: Icon(
-              _eyeView ? CupertinoIcons.eye : CupertinoIcons.eye_slash,
+              _eyeView ? FontAwesomeIcons.eye : FontAwesomeIcons.eyeSlash,
               color: Colors.white,
             ),
           ),
@@ -98,7 +98,7 @@ class BalanceState extends State<Balance> {
                   const IconFilled(
                     backgroundColor: Colors.white,
                     color: Colors.green,
-                    icon: CupertinoIcons.arrow_up_circle_fill,
+                    icon: FontAwesomeIcons.circleArrowUp,
                   ),
                   Column(
                     children: [
@@ -127,7 +127,7 @@ class BalanceState extends State<Balance> {
                   const IconFilled(
                     backgroundColor: Colors.white,
                     color: Colors.red,
-                    icon: CupertinoIcons.arrow_down_circle_fill,
+                    icon: FontAwesomeIcons.circleArrowDown,
                   ),
                   Column(
                     children: [
