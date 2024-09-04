@@ -14,17 +14,16 @@ class Balance extends StatefulWidget {
 
 class BalanceState extends State<Balance> {
   bool _eyeView = true;
-  double accountTotal = 15500.20;
-  double accountIncome = 15500.20;
-  double accountExpenses = 15500.20;
+  double accountTotal = 0;
+  double accountIncome = 0;
+  double accountExpenses = 0;
   final formatCurrency = NumberFormat.simpleCurrency(locale: "pt_BR");
-  int _selectedMonth = DateTime.now().month;
+  DateTime _selectedDate = DateTime.now();
 
-  _selectMonth(int i) {
+  _selectMonth(DateTime dateTime) {
     setState(() {
-      _selectedMonth = i;
+      _selectedDate = dateTime;
     });
-    Navigator.pop(context);
   }
 
   _updateViewStyle() {
@@ -33,10 +32,24 @@ class BalanceState extends State<Balance> {
     });
   }
 
+  String _formatedDate() {
+    String format = "MMMM";
+    if (_selectedDate.year != DateTime.now().year) {
+      format = "MMM yyyy";
+    }
+    return DateFormat(format).format(_selectedDate);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Box(
       width: 100,
+      internalPadding: const EdgeInsets.only(
+        left: 25,
+        right: 25,
+        bottom: 25,
+        top: 10,
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -45,15 +58,14 @@ class BalanceState extends State<Balance> {
               context: context,
               builder: (BuildContext context) => CalendarPicker(
                 onTap: _selectMonth,
+                selectedDate: _selectedDate,
               ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  DateFormat('MMMM').format(
-                    DateTime(0, _selectedMonth),
-                  ),
+                  _formatedDate(),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,

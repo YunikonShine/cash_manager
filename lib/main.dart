@@ -16,10 +16,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const Scaffold(
-        backgroundColor: Color(0xFF141414),
-        body: HomeScreen(),
-      ),
+      home: const HomeScreen(),
     );
   }
 }

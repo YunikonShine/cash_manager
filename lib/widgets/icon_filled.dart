@@ -23,8 +23,8 @@ class IconFilled extends StatelessWidget {
             child: Align(
               alignment: Alignment.center,
               child: Container(
-                height: 40,
-                width: 40,
+                height: 35,
+                width: 35,
                 decoration: new BoxDecoration(
                   color: backgroundColor,
                   shape: BoxShape.rectangle,

@@ -16,7 +16,12 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 
 class AccountScreen extends StatefulWidget {
-  const AccountScreen({super.key});
+  const AccountScreen({
+    super.key,
+    required this.onPop,
+  });
+
+  final Function onPop;
 
   @override
   AccountScreenState createState() => AccountScreenState();
@@ -116,6 +121,7 @@ class AccountScreenState extends State<AccountScreen> {
       );
       AccountQuery.createAccount(account);
       Navigator.pop(context);
+      widget.onPop();
     }
   }
 

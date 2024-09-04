@@ -29,10 +29,12 @@ class InsertField extends StatefulWidget {
 }
 
 class InsertFieldState extends State<InsertField> {
+  final FocusNode _focusNode = FocusNode();
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: widget.onClick,
+      onTap: widget.onClick ?? () => {_focusNode.requestFocus()},
       child: Container(
         height: widget.height,
         decoration: const BoxDecoration(
@@ -48,56 +50,55 @@ class InsertFieldState extends State<InsertField> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  child: Row(
-                    children: [
-                      if (widget.startImage != null)
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(50),
-                          child: Image(
-                            width: 40,
-                            height: 40,
-                            image: widget.startImage!,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      Padding(
-                        padding: EdgeInsets.only(
-                          right: widget.startImage == null ? 40 : 0,
-                        ),
-                        child: Icon(
-                          widget.startIcon,
-                          color: Colors.grey,
+                Row(
+                  children: [
+                    if (widget.startImage != null)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(50),
+                        child: Image(
+                          width: 40,
+                          height: 40,
+                          image: widget.startImage!,
+                          fit: BoxFit.cover,
                         ),
                       ),
-                      widget.startText != null
-                          ? Text(
-                              widget.startText ?? "",
-                              style: const TextStyle(
-                                color: Colors.grey,
+                    Padding(
+                      padding: EdgeInsets.only(
+                        right: widget.startImage == null ? 40 : 0,
+                      ),
+                      child: Icon(
+                        widget.startIcon,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    widget.startText != null
+                        ? Text(
+                            widget.startText ?? "",
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 18,
+                            ),
+                          )
+                        : Container(
+                            width: 250,
+                            child: TextField(
+                              focusNode: _focusNode,
+                              controller: widget.controller,
+                              decoration: new InputDecoration.collapsed(
+                                hintText: widget.hint,
+                                hintStyle: TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.normal,
+                                ),
+                              ),
+                              cursorColor: Colors.deepPurple,
+                              style: TextStyle(
+                                color: Colors.white,
                                 fontSize: 18,
                               ),
-                            )
-                          : Container(
-                              width: 100,
-                              child: TextField(
-                                controller: widget.controller,
-                                decoration: new InputDecoration.collapsed(
-                                  hintText: widget.hint,
-                                  hintStyle: TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.normal,
-                                  ),
-                                ),
-                                cursorColor: Colors.deepPurple,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                ),
-                              ),
                             ),
-                    ],
-                  ),
+                          ),
+                  ],
                 ),
                 Row(
                   children: [

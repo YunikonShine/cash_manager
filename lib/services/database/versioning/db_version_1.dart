@@ -5,7 +5,7 @@ class DBVersion1 {
     await db.execute(
         "CREATE TABLE banks ( id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, icon TEXT NOT NULL, color TEXT NOT NULL )");
     await db.execute(
-        "CREATE TABLE accounts ( id INTEGER PRIMARY KEY AUTOINCREMENT, desciption TEXT NOT NULL, balance REAL NOT NULL, type INT NOT NULL, color TEXT NOT NULL, bank_id INT NOT NULL, FOREIGN KEY (bank_id) REFERENCES banks (id) )");
+        "CREATE TABLE accounts ( id INTEGER PRIMARY KEY AUTOINCREMENT, desciption TEXT NOT NULL, balance REAL NOT NULL, initial_balance REAL NOT NULL, type INT NOT NULL, color TEXT NOT NULL, bank_id INT NOT NULL, FOREIGN KEY (bank_id) REFERENCES banks (id) )");
     await db.execute(
         "CREATE TABLE transactions ( id INTEGER PRIMARY KEY AUTOINCREMENT, amount REAL NOT NULL, type REAL NOT NULL )");
     await db.execute(

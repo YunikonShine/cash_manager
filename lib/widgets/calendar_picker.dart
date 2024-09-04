@@ -6,9 +6,11 @@ class CalendarPicker extends StatefulWidget {
   const CalendarPicker({
     super.key,
     required this.onTap,
+    required this.selectedDate,
   });
 
-  final Function(int i) onTap;
+  final Function(DateTime dateTime) onTap;
+  final DateTime selectedDate;
 
   @override
   CalendarPickerState createState() => CalendarPickerState();
@@ -16,7 +18,7 @@ class CalendarPicker extends StatefulWidget {
 
 class CalendarPickerState extends State<CalendarPicker>
     with SingleTickerProviderStateMixin {
-  int _currentYear = DateTime.now().year;
+  late int _currentYear;
   late AnimationController controller;
   late Animation<double> scaleAnimation;
 
@@ -40,6 +42,13 @@ class CalendarPickerState extends State<CalendarPicker>
     });
 
     controller.forward();
+
+    _currentYear = widget.selectedDate.year;
+  }
+
+  _selectDate(int month, [bool current = false]) {
+    widget.onTap(DateTime(current ? DateTime.now().year : _currentYear, month));
+    Navigator.pop(context);
   }
 
   _nextYear() {
@@ -129,7 +138,7 @@ class CalendarPickerState extends State<CalendarPicker>
                             borderRadius: const BorderRadius.all(
                               Radius.circular(25),
                             ),
-                            onTap: () => widget.onTap(i + 1),
+                            onTap: () => _selectDate(i + 1),
                             child: Container(
                               width: 40,
                               height: 40,
@@ -156,7 +165,7 @@ class CalendarPickerState extends State<CalendarPicker>
                             borderRadius: const BorderRadius.all(
                               Radius.circular(25),
                             ),
-                            onTap: () => widget.onTap(i + 1),
+                            onTap: () => _selectDate(i + 1),
                             child: Container(
                               width: 40,
                               height: 40,
@@ -191,12 +200,12 @@ class CalendarPickerState extends State<CalendarPicker>
                               borderRadius: const BorderRadius.all(
                                 Radius.circular(25),
                               ),
-                              onTap: () => widget.onTap(DateTime.now().month),
+                              onTap: () => Navigator.pop(context),
                               child: Container(
                                 height: 40,
                                 alignment: Alignment.center,
                                 child: const Text(
-                                  "Mês atual",
+                                  "Cancelar",
                                   style: TextStyle(
                                     color: Color(0xFFE75DFF),
                                     fontSize: 18,
@@ -212,12 +221,13 @@ class CalendarPickerState extends State<CalendarPicker>
                             borderRadius: const BorderRadius.all(
                               Radius.circular(25),
                             ),
-                            onTap: () => Navigator.pop(context),
+                            onTap: () =>
+                                _selectDate(DateTime.now().month, true),
                             child: Container(
                               height: 40,
                               alignment: Alignment.center,
                               child: const Text(
-                                "Cancelar",
+                                "Mês atual",
                                 style: TextStyle(
                                   color: Color(0xFFE75DFF),
                                   fontSize: 18,

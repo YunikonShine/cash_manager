@@ -8,6 +8,7 @@ class AccountQuery {
   static Future<void> createAccount(Account account) async {
     Database? db = await DatabaseConnection.instance.database;
     Map<String, Object?> values = {
+      "inital_balance": account.balance,
       "balance": account.balance,
       "bank_id": account.bankId,
       "color": account.color,
