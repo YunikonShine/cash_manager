@@ -7,6 +7,7 @@ class TransactionAccount {
   late double amount;
   late int type;
   late int categoryId;
+  late DateTime date;
   late Category? category;
   late int accountId;
   late Account? account;
@@ -17,6 +18,7 @@ class TransactionAccount {
     required this.amount,
     required this.type,
     required this.categoryId,
+    required this.date,
     this.category,
     required this.accountId,
     this.account,
@@ -28,6 +30,7 @@ class TransactionAccount {
     amount = data['amount'];
     type = data['type'];
     categoryId = data['category_id'];
+    date = DateTime.fromMicrosecondsSinceEpoch(data['date']);
     categoryId = data['account_id'];
   }
 }

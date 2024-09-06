@@ -5,6 +5,7 @@ import 'package:cash_manager/screens/account_screen.dart';
 import 'package:cash_manager/screens/card_screen.dart';
 import 'package:cash_manager/services/database/queries/account_query.dart';
 import 'package:cash_manager/services/database/queries/credit_card_query.dart';
+import 'package:cash_manager/services/database/queries/transaction_account_query.dart';
 import 'package:cash_manager/widgets/balance.dart';
 import 'package:cash_manager/widgets/button_alert.dart';
 import 'package:cash_manager/widgets/empty_box.dart';
@@ -24,6 +25,11 @@ class HomeScreenState extends State<HomeScreen> {
   late List<CreditCard> _cards = [];
   Future<List<String>> _controller = Future.value([]);
 
+  double _accountTotal = 0;
+  double _accountIncome = 0;
+  double _accountExpenses = 0;
+  DateTime _selectedDate = DateTime.now();
+
   @override
   void initState() {
     super.initState();
@@ -33,10 +39,24 @@ class HomeScreenState extends State<HomeScreen> {
   Future<void> _pullRefresh() async {
     List<Account> freshAccounts = await AccountQuery.selectAccounts();
     List<CreditCard> freshCards = await CreditCardQuery.selectCreditCards();
+    double income = await TransactionAccountQuery.getTransactionAmountUpToDate(
+        _selectedDate, true);
+    double expense = await TransactionAccountQuery.getTransactionAmountUpToDate(
+        _selectedDate, false);
     setState(() {
       _controller = Future.value([""]);
       _accounts = freshAccounts;
       _cards = freshCards;
+      _accountIncome = income;
+      _accountExpenses = expense;
+      _accountTotal = income - expense;
+    });
+  }
+
+  _setDate(DateTime date) {
+    _pullRefresh();
+    setState(() {
+      _selectedDate = date;
     });
   }
 
@@ -164,7 +184,13 @@ class HomeScreenState extends State<HomeScreen> {
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Balance(),
+                    Balance(
+                      accountExpenses: _accountExpenses,
+                      accountIncome: _accountIncome,
+                      accountTotal: _accountTotal,
+                      selectedDate: _selectedDate,
+                      setDate: _setDate,
+                    ),
                     _accounts.isEmpty
                         ? EmptyBox(
                             name: "Contas",

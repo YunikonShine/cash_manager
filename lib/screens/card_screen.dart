@@ -1,11 +1,7 @@
-import 'package:cash_manager/helpers/hex_color.dart';
-import 'package:cash_manager/models/account.dart';
 import 'package:cash_manager/models/credit_card.dart';
 import 'package:cash_manager/models/selection_item.dart';
 import 'package:cash_manager/services/database/queries/account_query.dart';
-import 'package:cash_manager/services/database/queries/bank_query.dart';
 import 'package:cash_manager/services/database/queries/credit_card_query.dart';
-import 'package:cash_manager/widgets/bank_color_picker.dart';
 import 'package:cash_manager/widgets/box.dart';
 import 'package:cash_manager/widgets/calculator.dart';
 import 'package:cash_manager/widgets/calendar_picker.dart';

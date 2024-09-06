@@ -25,7 +25,7 @@ class IconFilled extends StatelessWidget {
               child: Container(
                 height: 35,
                 width: 35,
-                decoration: new BoxDecoration(
+                decoration: BoxDecoration(
                   color: backgroundColor,
                   shape: BoxShape.rectangle,
                   borderRadius: const BorderRadius.all(

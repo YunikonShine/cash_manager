@@ -6,7 +6,20 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 
 class Balance extends StatefulWidget {
-  const Balance({super.key});
+  const Balance({
+    super.key,
+    required this.accountTotal,
+    required this.accountIncome,
+    required this.accountExpenses,
+    required this.selectedDate,
+    required this.setDate,
+  });
+
+  final double accountTotal;
+  final double accountIncome;
+  final double accountExpenses;
+  final DateTime selectedDate;
+  final Function(DateTime date) setDate;
 
   @override
   BalanceState createState() => BalanceState();
@@ -14,16 +27,10 @@ class Balance extends StatefulWidget {
 
 class BalanceState extends State<Balance> {
   bool _eyeView = true;
-  double accountTotal = 0;
-  double accountIncome = 0;
-  double accountExpenses = 0;
   final formatCurrency = NumberFormat.simpleCurrency(locale: "pt_BR");
-  DateTime _selectedDate = DateTime.now();
 
   _selectMonth(DateTime dateTime) {
-    setState(() {
-      _selectedDate = dateTime;
-    });
+    widget.setDate(dateTime);
   }
 
   _updateViewStyle() {
@@ -34,10 +41,10 @@ class BalanceState extends State<Balance> {
 
   String _formatedDate() {
     String format = "MMMM";
-    if (_selectedDate.year != DateTime.now().year) {
+    if (widget.selectedDate.year != DateTime.now().year) {
       format = "MMM yyyy";
     }
-    return DateFormat(format).format(_selectedDate);
+    return DateFormat(format).format(widget.selectedDate);
   }
 
   @override
@@ -58,7 +65,7 @@ class BalanceState extends State<Balance> {
               context: context,
               builder: (BuildContext context) => CalendarPicker(
                 onTap: _selectMonth,
-                selectedDate: _selectedDate,
+                selectedDate: widget.selectedDate,
               ),
             ),
             child: Row(
@@ -89,7 +96,7 @@ class BalanceState extends State<Balance> {
             ),
           ),
           Text(
-            _eyeView ? formatCurrency.format(accountTotal) : 'R\$ *****',
+            _eyeView ? formatCurrency.format(widget.accountTotal) : 'R\$ *****',
             style: const TextStyle(
               color: Colors.white,
               fontSize: 24,
@@ -123,7 +130,7 @@ class BalanceState extends State<Balance> {
                       ),
                       Text(
                         _eyeView
-                            ? formatCurrency.format(accountIncome)
+                            ? formatCurrency.format(widget.accountIncome)
                             : 'R\$ *****',
                         style: const TextStyle(
                           color: Colors.green,
@@ -152,7 +159,7 @@ class BalanceState extends State<Balance> {
                       ),
                       Text(
                         _eyeView
-                            ? formatCurrency.format(accountExpenses)
+                            ? formatCurrency.format(widget.accountExpenses)
                             : 'R\$ *****',
                         style: const TextStyle(
                           color: Colors.red,

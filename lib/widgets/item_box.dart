@@ -113,7 +113,7 @@ class ItemBoxState extends State<ItemBox> {
                           ),
                           Container(
                             width: 200,
-                            padding: EdgeInsets.only(left: 15),
+                            padding: const EdgeInsets.only(left: 15),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.center,

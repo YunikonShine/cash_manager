@@ -15,8 +15,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 
-class BalanceScreen extends StatefulWidget {
-  const BalanceScreen({
+class TransactionScreen extends StatefulWidget {
+  const TransactionScreen({
     super.key,
     required this.type,
     required this.onPop,
@@ -26,10 +26,10 @@ class BalanceScreen extends StatefulWidget {
   final Function onPop;
 
   @override
-  BalanceScreenState createState() => BalanceScreenState();
+  TransactionScreenState createState() => TransactionScreenState();
 }
 
-class BalanceScreenState extends State<BalanceScreen> {
+class TransactionScreenState extends State<TransactionScreen> {
   double accountTotal = 0;
   final _formatCurrency = NumberFormat.simpleCurrency(locale: "pt_BR");
 
@@ -155,6 +155,7 @@ class BalanceScreenState extends State<BalanceScreen> {
         type: widget.type ? 1 : 0,
         categoryId: _categoryId!,
         accountId: _accountId!,
+        date: _selectedDate,
       );
       TransactionAccountQuery.createTransaction(transactionAccount);
       Navigator.pop(context);

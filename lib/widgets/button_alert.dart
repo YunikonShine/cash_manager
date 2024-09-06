@@ -1,4 +1,4 @@
-import 'package:cash_manager/screens/balance_screen.dart';
+import 'package:cash_manager/screens/transaction_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -36,14 +36,14 @@ class ButtonAlertState extends State<ButtonAlert> {
                           IconButton(
                             style: IconButton.styleFrom(
                               backgroundColor: Colors.grey,
-                              fixedSize: Size(60, 60),
+                              fixedSize: const Size(60, 60),
                             ),
                             onPressed: () {
                               Navigator.pop(context);
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => BalanceScreen(
+                                  builder: (context) => TransactionScreen(
                                     type: true,
                                     onPop: widget.refresh,
                                   ),
@@ -116,7 +116,7 @@ class ButtonAlertState extends State<ButtonAlert> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => BalanceScreen(
+                                  builder: (context) => TransactionScreen(
                                     type: false,
                                     onPop: widget.refresh,
                                   ),

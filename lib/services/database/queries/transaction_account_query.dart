@@ -12,6 +12,7 @@ class TransactionAccountQuery {
       "description": transaction.description,
       "amount": transaction.amount,
       "type": transaction.type,
+      "date": transaction.date.microsecondsSinceEpoch,
       "category_id": transaction.categoryId,
       "account_id": transaction.accountId,
     };
@@ -22,5 +23,24 @@ class TransactionAccountQuery {
       await AccountQuery.removeBalance(
           transaction.accountId, transaction.amount);
     }
+  }
+
+  static Future<double> getTransactionAmountUpToDate(
+      DateTime date, bool type) async {
+    Database? db = await DatabaseConnection.instance.database;
+
+    int firstDay = DateTime(date.year, date.month, 1).microsecondsSinceEpoch;
+    int lastDay = DateTime(date.year, date.month + 1, 0).microsecondsSinceEpoch;
+
+    List<Map<String, dynamic>>? result = await db?.query(_tableName,
+        where: 'type = ? AND date >= ? AND date <= ?',
+        whereArgs: [type, firstDay, lastDay]);
+
+    double total = 0;
+    result?.forEach((item) {
+      total += item['amount'];
+    });
+
+    return total;
   }
 }

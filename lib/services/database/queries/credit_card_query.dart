@@ -1,4 +1,3 @@
-import 'package:cash_manager/models/account.dart';
 import 'package:cash_manager/models/credit_card.dart';
 import 'package:cash_manager/services/database/database_connection.dart';
 import 'package:cash_manager/services/database/queries/account_query.dart';
