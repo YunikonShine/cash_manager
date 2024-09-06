@@ -1,3 +1,5 @@
+import 'package:cash_manager/models/transaction_type.dart';
+import 'package:cash_manager/screens/transaction_list_screen.dart';
 import 'package:cash_manager/widgets/box.dart';
 import 'package:cash_manager/widgets/calendar_picker.dart';
 import 'package:cash_manager/widgets/icon_filled.dart';
@@ -112,63 +114,83 @@ class BalanceState extends State<Balance> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const IconFilled(
-                    backgroundColor: Colors.white,
-                    color: Colors.green,
-                    icon: FontAwesomeIcons.circleArrowUp,
+              GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const TransactionListScreen(
+                      transactionType: TransactionType.income,
+                    ),
                   ),
-                  Column(
-                    children: [
-                      const Text(
-                        "Entradas",
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 18,
+                ),
+                child: Row(
+                  children: [
+                    const IconFilled(
+                      backgroundColor: Colors.white,
+                      color: Colors.green,
+                      icon: FontAwesomeIcons.circleArrowUp,
+                    ),
+                    Column(
+                      children: [
+                        const Text(
+                          "Entradas",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 18,
+                          ),
                         ),
-                      ),
-                      Text(
-                        _eyeView
-                            ? formatCurrency.format(widget.accountIncome)
-                            : 'R\$ *****',
-                        style: const TextStyle(
-                          color: Colors.green,
-                          fontSize: 18,
+                        Text(
+                          _eyeView
+                              ? formatCurrency.format(widget.accountIncome)
+                              : 'R\$ *****',
+                          style: const TextStyle(
+                            color: Colors.green,
+                            fontSize: 18,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
-              Row(
-                children: [
-                  const IconFilled(
-                    backgroundColor: Colors.white,
-                    color: Colors.red,
-                    icon: FontAwesomeIcons.circleArrowDown,
+              GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const TransactionListScreen(
+                      transactionType: TransactionType.expense,
+                    ),
                   ),
-                  Column(
-                    children: [
-                      const Text(
-                        "Saídas",
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 18,
+                ),
+                child: Row(
+                  children: [
+                    const IconFilled(
+                      backgroundColor: Colors.white,
+                      color: Colors.red,
+                      icon: FontAwesomeIcons.circleArrowDown,
+                    ),
+                    Column(
+                      children: [
+                        const Text(
+                          "Saídas",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 18,
+                          ),
                         ),
-                      ),
-                      Text(
-                        _eyeView
-                            ? formatCurrency.format(widget.accountExpenses)
-                            : 'R\$ *****',
-                        style: const TextStyle(
-                          color: Colors.red,
-                          fontSize: 18,
+                        Text(
+                          _eyeView
+                              ? formatCurrency.format(widget.accountExpenses)
+                              : 'R\$ *****',
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontSize: 18,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ],
           )

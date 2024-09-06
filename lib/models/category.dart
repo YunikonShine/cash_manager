@@ -1,14 +1,14 @@
 class Category {
   int? id;
-  String? name;
-  String? icon;
-  int? type;
+  late String name;
+  late String icon;
+  late int type;
 
   Category({
     this.id,
-    this.name,
-    this.icon,
-    this.type,
+    required this.name,
+    required this.icon,
+    required this.type,
   });
 
   Category.fromMap(Map<String, dynamic> data) {

@@ -76,7 +76,7 @@ class InsertFieldState extends State<InsertField> {
                           padding: const EdgeInsets.all(8),
                           child: Image(
                             image: widget.startImageIcon!,
-                            fit: BoxFit.cover,
+                            fit: BoxFit.fill,
                           ),
                         ),
                       ),

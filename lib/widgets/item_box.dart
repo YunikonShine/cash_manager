@@ -12,6 +12,7 @@ class ItemBox extends StatefulWidget {
     required this.onClick,
     required this.buttonText,
     required this.icon,
+    this.total = 0,
   });
 
   final String name;
@@ -19,6 +20,7 @@ class ItemBox extends StatefulWidget {
   final VoidCallback onClick;
   final String buttonText;
   final IconData icon;
+  final double total;
 
   @override
   ItemBoxState createState() => ItemBoxState();
@@ -26,22 +28,6 @@ class ItemBox extends StatefulWidget {
 
 class ItemBoxState extends State<ItemBox> {
   final formatCurrency = NumberFormat.simpleCurrency(locale: "pt_BR");
-  double totalAccount = 0;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void didUpdateWidget(covariant ItemBox oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    totalAccount = 0;
-    for (SelectionItem a in widget.items) {
-      totalAccount += a.amount!;
-    }
-    setState(() {});
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -182,9 +168,9 @@ class ItemBoxState extends State<ItemBox> {
                     ),
                   ),
                   Text(
-                    formatCurrency.format(totalAccount),
+                    formatCurrency.format(widget.total),
                     style: TextStyle(
-                      color: totalAccount >= 0 ? Colors.green : Colors.red,
+                      color: widget.total >= 0 ? Colors.green : Colors.red,
                       fontSize: 18,
                     ),
                   )

@@ -35,7 +35,7 @@ class Box extends StatelessWidget {
               topLeft: Radius.circular(top ? 50 : 0),
               topRight: Radius.circular(top ? 50 : 0),
             ),
-            color: const Color(0xFF4C4C4C),
+            color: const Color(0xFF333333),
           ),
           child: Padding(
             padding: internalPadding,

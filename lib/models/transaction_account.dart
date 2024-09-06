@@ -11,6 +11,7 @@ class TransactionAccount {
   late Category? category;
   late int accountId;
   late Account? account;
+  late DateTime createdAt;
 
   TransactionAccount({
     this.id,
@@ -31,6 +32,7 @@ class TransactionAccount {
     type = data['type'];
     categoryId = data['category_id'];
     date = DateTime.fromMicrosecondsSinceEpoch(data['date']);
-    categoryId = data['account_id'];
+    accountId = data['account_id'];
+    createdAt = DateTime.fromMicrosecondsSinceEpoch(data['created_at']);
   }
 }

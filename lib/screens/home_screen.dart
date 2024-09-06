@@ -1,8 +1,10 @@
 import 'package:cash_manager/models/account.dart';
 import 'package:cash_manager/models/credit_card.dart';
 import 'package:cash_manager/models/selection_item.dart';
+import 'package:cash_manager/models/transaction_type.dart';
 import 'package:cash_manager/screens/account_screen.dart';
 import 'package:cash_manager/screens/card_screen.dart';
+import 'package:cash_manager/screens/transaction_list_screen.dart';
 import 'package:cash_manager/services/database/queries/account_query.dart';
 import 'package:cash_manager/services/database/queries/credit_card_query.dart';
 import 'package:cash_manager/services/database/queries/transaction_account_query.dart';
@@ -105,6 +107,17 @@ class HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const TransactionListScreen(
+                            transactionType: TransactionType.income,
+                          ),
+                        ),
+                      );
+                    },
                     child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -210,6 +223,7 @@ class HomeScreenState extends State<HomeScreen> {
                             name: "Contas",
                             buttonText: "Cadastrar conta",
                             icon: FontAwesomeIcons.buildingColumns,
+                            total: _accountTotal,
                             items: SelectionItem.fromAccounts(_accounts),
                             onClick: () => Navigator.push(
                               context,

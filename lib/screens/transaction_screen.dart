@@ -155,7 +155,8 @@ class TransactionScreenState extends State<TransactionScreen> {
         type: widget.type ? 1 : 0,
         categoryId: _categoryId!,
         accountId: _accountId!,
-        date: _selectedDate,
+        date: DateTime(
+            _selectedDate.year, _selectedDate.month, _selectedDate.day),
       );
       TransactionAccountQuery.createTransaction(transactionAccount);
       Navigator.pop(context);
