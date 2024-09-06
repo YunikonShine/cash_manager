@@ -45,7 +45,12 @@ class SelectionState extends State<Selection> {
                         itemBuilder: (context, index) {
                           SelectionItem selectionItem = snapshot.data![index];
                           return InsertField(
-                            startImage: selectionItem.image,
+                            startImage: selectionItem.imageType
+                                ? selectionItem.image
+                                : null,
+                            startImageIcon: !selectionItem.imageType
+                                ? selectionItem.image
+                                : null,
                             startIcon: selectionItem.icon,
                             startText: selectionItem.name,
                             finalIcon: FontAwesomeIcons.chevronRight,

@@ -8,10 +8,12 @@ class Calculator extends StatefulWidget {
     super.key,
     required this.onClick,
     required this.balance,
+    this.type,
   });
 
   final Function(double) onClick;
   final double balance;
+  final bool? type;
 
   @override
   CalculatorState createState() => CalculatorState();
@@ -57,6 +59,16 @@ class CalculatorState extends State<Calculator> {
         _totalText += text;
       }
     });
+  }
+
+  Color _getColor() {
+    if (widget.type == null) {
+      return Colors.purple;
+    } else if (widget.type!) {
+      return Colors.green;
+    } else {
+      return Colors.red;
+    }
   }
 
   @override
@@ -150,15 +162,15 @@ class CalculatorState extends State<Calculator> {
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(
+                        side: BorderSide(
                           width: 2.0,
-                          color: Colors.purple,
+                          color: _getColor(),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         "Cancelar",
                         style: TextStyle(
-                          color: Colors.purple,
+                          color: _getColor(),
                           fontSize: 18,
                         ),
                       ),
@@ -172,8 +184,8 @@ class CalculatorState extends State<Calculator> {
                         widget.onClick(
                             double.parse(_totalText.replaceAll(",", ".")));
                       },
-                      style: const ButtonStyle(
-                        backgroundColor: WidgetStatePropertyAll(Colors.purple),
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(_getColor()),
                       ),
                       child: const Text(
                         "Confirmar",

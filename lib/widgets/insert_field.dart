@@ -13,10 +13,12 @@ class InsertField extends StatefulWidget {
     this.height = 60,
     this.color,
     this.finalText,
+    this.startImageIcon,
   });
 
   final IconData? startIcon;
   final ImageProvider<Object>? startImage;
+  final ImageProvider<Object>? startImageIcon;
   final String? startText;
   final IconData? finalIcon;
   final String? hint;
@@ -64,9 +66,26 @@ class InsertFieldState extends State<InsertField> {
                           fit: BoxFit.cover,
                         ),
                       ),
+                    if (widget.startImageIcon != null)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(50),
+                        child: Container(
+                          height: 40,
+                          width: 40,
+                          color: Colors.blue,
+                          padding: const EdgeInsets.all(8),
+                          child: Image(
+                            image: widget.startImageIcon!,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
                     Padding(
                       padding: EdgeInsets.only(
-                        right: widget.startImage == null ? 40 : 0,
+                        right: widget.startImage == null &&
+                                widget.startImageIcon == null
+                            ? 40
+                            : 0,
                       ),
                       child: Icon(
                         widget.startIcon,

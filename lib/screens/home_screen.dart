@@ -6,6 +6,7 @@ import 'package:cash_manager/screens/card_screen.dart';
 import 'package:cash_manager/services/database/queries/account_query.dart';
 import 'package:cash_manager/services/database/queries/credit_card_query.dart';
 import 'package:cash_manager/widgets/balance.dart';
+import 'package:cash_manager/widgets/button_alert.dart';
 import 'package:cash_manager/widgets/empty_box.dart';
 import 'package:cash_manager/widgets/item_box.dart';
 import 'package:flutter/material.dart';
@@ -44,9 +45,12 @@ class HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       extendBody: true,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () => showDialog<String>(
+          context: context,
+          builder: (BuildContext context) => ButtonAlert(refresh: _pullRefresh),
+        ),
         child: const Icon(
-          Icons.add,
+          FontAwesomeIcons.plus,
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

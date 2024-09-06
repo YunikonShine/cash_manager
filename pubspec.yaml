@@ -41,6 +41,7 @@ dependencies:
   flutter_colorpicker: ^1.1.0
   math_expressions: ^2.6.0
   fluttertoast: ^8.2.8
+  calendar_date_picker2: ^1.1.6
 
 dev_dependencies:
   flutter_test:
@@ -68,6 +69,7 @@ flutter:
   assets:
     - assets/banks/
     - assets/card_brands/
+    - assets/categories/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

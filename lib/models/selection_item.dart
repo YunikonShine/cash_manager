@@ -2,6 +2,7 @@ import 'package:cash_manager/models/account.dart';
 import 'package:cash_manager/models/account_type.dart';
 import 'package:cash_manager/models/bank.dart';
 import 'package:cash_manager/models/card_brand.dart';
+import 'package:cash_manager/models/category.dart';
 import 'package:cash_manager/models/credit_card.dart';
 import 'package:flutter/material.dart';
 
@@ -10,11 +11,21 @@ class SelectionItem {
   String? name;
   IconData? icon;
   ImageProvider<Object>? image;
+  bool imageType;
   String? color;
   double? amount;
+  int? type;
 
-  SelectionItem(
-      {this.id, this.name, this.icon, this.image, this.color, this.amount});
+  SelectionItem({
+    this.id,
+    this.name,
+    this.icon,
+    this.image,
+    this.color,
+    this.amount,
+    this.type,
+    this.imageType = true,
+  });
 
   static List<SelectionItem> fromAccountTypes() {
     List<SelectionItem> item = [];
@@ -57,6 +68,21 @@ class SelectionItem {
           image: AssetImage("assets/banks/${account.bank?.icon}.png"),
           amount: account.balance,
         ),
+      );
+    }
+    return item;
+  }
+
+  static List<SelectionItem> fromCategories(List<Category> categories) {
+    List<SelectionItem> item = [];
+    for (Category category in categories) {
+      item.add(
+        SelectionItem(
+            id: category.id,
+            name: category.name,
+            image: AssetImage("assets/categories/${category.icon}.png"),
+            type: category.type,
+            imageType: false),
       );
     }
     return item;

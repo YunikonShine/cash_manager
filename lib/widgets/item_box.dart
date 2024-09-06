@@ -31,9 +31,16 @@ class ItemBoxState extends State<ItemBox> {
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void didUpdateWidget(covariant ItemBox oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    totalAccount = 0;
     for (SelectionItem a in widget.items) {
       totalAccount += a.amount!;
     }
+    setState(() {});
   }
 
   @override
@@ -105,7 +112,7 @@ class ItemBoxState extends State<ItemBox> {
                             ),
                           ),
                           Container(
-                            width: 100,
+                            width: 200,
                             padding: EdgeInsets.only(left: 15),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

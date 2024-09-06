@@ -45,4 +45,32 @@ class AccountQuery {
 
     return Account.fromMap(result![0]);
   }
+
+  static Future<void> addBalance(int id, double amount) async {
+    Database? db = await DatabaseConnection.instance.database;
+    List<Map<String, Object?>>? result =
+        await db?.query(_tableName, where: 'id = ?', whereArgs: [id]);
+
+    Account account = Account.fromMap(result![0]);
+    account.balance += amount;
+
+    Map<String, Object?> values = {
+      "balance": account.balance,
+    };
+    await db?.update(_tableName, values, where: 'id = ?', whereArgs: [id]);
+  }
+
+  static Future<void> removeBalance(int id, double amount) async {
+    Database? db = await DatabaseConnection.instance.database;
+    List<Map<String, Object?>>? result =
+        await db?.query(_tableName, where: 'id = ?', whereArgs: [id]);
+
+    Account account = Account.fromMap(result![0]);
+    account.balance -= amount;
+
+    Map<String, Object?> values = {
+      "balance": account.balance,
+    };
+    await db?.update(_tableName, values, where: 'id = ?', whereArgs: [id]);
+  }
 }

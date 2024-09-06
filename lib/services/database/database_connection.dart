@@ -1,4 +1,5 @@
 import 'package:cash_manager/services/database/versioning/db_version_2.dart';
+import 'package:cash_manager/services/database/versioning/db_version_3.dart';
 
 import 'versioning/db_version_1.dart';
 import 'package:sqflite/sqflite.dart';
@@ -7,7 +8,7 @@ class DatabaseConnection {
   static DatabaseConnection? _instance;
 
   static Database? _database;
-  static const int _databaseVersion = 2;
+  static const int _databaseVersion = 3;
   static const String _databaseName = 'cash_manager.db';
 
   Future<Database?> get database async {
@@ -41,6 +42,9 @@ class DatabaseConnection {
         break;
       case 2:
         await DBVersion2.dbUpdatesVersion(db);
+        break;
+      case 3:
+        await DBVersion3.dbUpdatesVersion(db);
         break;
     }
   }
