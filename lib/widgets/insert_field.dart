@@ -14,6 +14,7 @@ class InsertField extends StatefulWidget {
     this.color,
     this.finalText,
     this.startImageIcon,
+    this.finalWidget,
   });
 
   final IconData? startIcon;
@@ -27,6 +28,7 @@ class InsertField extends StatefulWidget {
   final double height;
   final Color? color;
   final String? finalText;
+  final Widget? finalWidget;
 
   @override
   InsertFieldState createState() => InsertFieldState();
@@ -148,13 +150,14 @@ class InsertFieldState extends State<InsertField> {
                           ),
                         ),
                       ),
-                    Container(
-                      padding: const EdgeInsets.only(left: 20),
-                      child: Icon(
-                        widget.finalIcon,
-                        color: Colors.grey,
-                      ),
-                    ),
+                    widget.finalWidget ??
+                        Container(
+                          padding: const EdgeInsets.only(left: 20),
+                          child: Icon(
+                            widget.finalIcon,
+                            color: Colors.grey,
+                          ),
+                        ),
                   ],
                 )
               ],

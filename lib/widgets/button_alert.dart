@@ -1,3 +1,4 @@
+import 'package:cash_manager/screens/card_transaction_screen.dart';
 import 'package:cash_manager/screens/transaction_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -149,7 +150,17 @@ class ButtonAlertState extends State<ButtonAlert> {
                             backgroundColor: Colors.grey,
                             fixedSize: const Size(60, 60),
                           ),
-                          onPressed: () => {},
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => CardTransactionScreen(
+                                  onPop: widget.refresh,
+                                ),
+                              ),
+                            );
+                          },
                           icon: const FaIcon(
                             FontAwesomeIcons.creditCard,
                             color: Colors.purple,

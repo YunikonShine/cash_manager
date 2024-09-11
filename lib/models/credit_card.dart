@@ -1,4 +1,5 @@
 import 'package:cash_manager/models/account.dart';
+import 'package:cash_manager/models/invoice.dart';
 
 class CreditCard {
   int? id;
@@ -9,6 +10,7 @@ class CreditCard {
   late int brand;
   late int accountId;
   late Account? account;
+  late Invoice? currentInvoice;
 
   CreditCard({
     this.id,
@@ -19,6 +21,7 @@ class CreditCard {
     required this.brand,
     required this.accountId,
     this.account,
+    this.currentInvoice,
   });
 
   CreditCard.fromMap(Map<String, dynamic> data) {

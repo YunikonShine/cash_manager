@@ -1,4 +1,4 @@
-import 'package:cash_manager/models/transaction_type.dart';
+import 'package:cash_manager/models/header_dropdown_item.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -11,6 +11,7 @@ class Header extends StatelessWidget {
     this.selectedValue,
     this.selectValue,
     this.hideBack = false,
+    this.dropdownItems,
   });
 
   final String text;
@@ -18,6 +19,7 @@ class Header extends StatelessWidget {
   final String? selectedValue;
   final Function(String? value)? selectValue;
   final bool hideBack;
+  final List<HeaderDropdownItem>? dropdownItems;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +57,7 @@ class Header extends StatelessWidget {
                   ),
                 ),
               ),
-            if (dropdown)
+            if (dropdown && dropdownItems != null && dropdownItems!.isNotEmpty)
               SizedBox(
                 width: 150,
                 child: DropdownButtonHideUnderline(
@@ -77,13 +79,12 @@ class Header extends StatelessWidget {
                       padding: EdgeInsets.only(left: 15, right: 15),
                     ),
                     selectedItemBuilder: (context) {
-                      return TransactionType.values.map(
+                      return dropdownItems!.map(
                         (item) {
                           return Container(
                             alignment: AlignmentDirectional.center,
                             child: Text(
-                              TransactionTypeHelper.fromString(selectedValue)
-                                  .name,
+                              selectedValue!,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 22,
@@ -93,9 +94,10 @@ class Header extends StatelessWidget {
                         },
                       ).toList();
                     },
-                    items: TransactionType.values
-                        .map((TransactionType item) => DropdownMenuItem<String>(
-                              value: item.toString(),
+                    items: dropdownItems!
+                        .map((HeaderDropdownItem item) =>
+                            DropdownMenuItem<String>(
+                              value: item.name,
                               child: Container(
                                 padding: const EdgeInsets.only(bottom: 5),
                                 decoration: const BoxDecoration(

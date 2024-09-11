@@ -15,6 +15,7 @@ class SelectionItem {
   String? color;
   double? amount;
   int? type;
+  DateTime? closeDate;
 
   SelectionItem({
     this.id,
@@ -25,6 +26,7 @@ class SelectionItem {
     this.amount,
     this.type,
     this.imageType = true,
+    this.closeDate,
   });
 
   static List<SelectionItem> fromAccountTypes() {
@@ -97,7 +99,8 @@ class SelectionItem {
           name: card.description,
           image: AssetImage(
               "assets/card_brands/${CardBrandHelper.fromId(card.brand).image}.png"),
-          amount: card.limit,
+          amount: -card.currentInvoice!.amount,
+          closeDate: card.currentInvoice!.closeDate,
         ),
       );
     }

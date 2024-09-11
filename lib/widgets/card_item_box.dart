@@ -1,41 +1,63 @@
+import 'package:cash_manager/models/credit_card.dart';
+import 'package:cash_manager/models/header_dropdown_item.dart';
 import 'package:cash_manager/models/selection_item.dart';
+import 'package:cash_manager/screens/card_screen.dart';
+import 'package:cash_manager/screens/card_transaction_list_screen.dart';
+import 'package:cash_manager/services/database/queries/credit_card_query.dart';
 import 'package:cash_manager/widgets/box.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 
-class ItemBox extends StatefulWidget {
-  const ItemBox({
+class CardItemBox extends StatefulWidget {
+  const CardItemBox({
     super.key,
-    required this.name,
-    required this.items,
-    required this.onClick,
-    required this.onLineClick,
-    required this.buttonText,
-    required this.icon,
-    this.total = 0,
-    this.isCard = false,
-    this.selection = true,
-    this.selectType,
+    required this.onPop,
   });
 
-  final String name;
-  final List<SelectionItem> items;
-  final VoidCallback onClick;
-  final VoidCallback onLineClick;
-  final String buttonText;
-  final IconData icon;
-  final double total;
-  final bool isCard;
-  final bool selection;
-  final Function(bool value)? selectType;
+  final Function onPop;
 
   @override
-  ItemBoxState createState() => ItemBoxState();
+  CardItemBoxState createState() => CardItemBoxState();
 }
 
-class ItemBoxState extends State<ItemBox> {
+class CardItemBoxState extends State<CardItemBox> {
   final formatCurrency = NumberFormat.simpleCurrency(locale: "pt_BR");
+
+  late List<CreditCard> _cards = [];
+  late List<SelectionItem> _listItems = [];
+
+  double _total = 0;
+  bool _incomeStatus = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateInitialStatus();
+  }
+
+  _updateInitialStatus() async {
+    List<CreditCard> freshCards =
+        await CreditCardQuery.selectCreditCards(_incomeStatus);
+
+    double cardBalance = 0;
+    for (CreditCard card in freshCards) {
+      cardBalance += card.currentInvoice!.amount;
+    }
+
+    setState(() {
+      _cards = freshCards;
+      _listItems = SelectionItem.fromCreditCards(_cards);
+      _total = cardBalance;
+    });
+  }
+
+  _setIncomeStatus(bool status) {
+    setState(() {
+      _incomeStatus = status;
+    });
+    _updateInitialStatus();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,16 +75,16 @@ class ItemBoxState extends State<ItemBox> {
                 padding: const EdgeInsets.only(
                   right: 10,
                 ),
-                child: Text(
-                  widget.name,
-                  style: const TextStyle(
+                child: const Text(
+                  "Cartões",
+                  style: TextStyle(
                     color: Colors.grey,
                     fontSize: 18,
                   ),
                 ),
               ),
-              Icon(
-                widget.icon,
+              const FaIcon(
+                FontAwesomeIcons.creditCard,
                 color: Colors.grey,
                 size: 18,
               ),
@@ -81,22 +103,42 @@ class ItemBoxState extends State<ItemBox> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              if (widget.isCard)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    GestureDetector(
-                      onTap: () => widget.selectType!(true),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onTap: () => _setIncomeStatus(true),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: _incomeStatus ? Colors.green : Colors.grey,
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(25),
+                        ),
+                      ),
+                      child: const Text(
+                        "Fatura aberta",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => _setIncomeStatus(false),
+                    child: Container(
+                      padding: const EdgeInsets.only(left: 15),
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: widget.selection ? Colors.green : Colors.grey,
+                          color: _incomeStatus ? Colors.grey : Colors.green,
                           borderRadius: const BorderRadius.all(
                             Radius.circular(25),
                           ),
                         ),
                         child: const Text(
-                          "Fatura aberta",
+                          "Fatura fechada",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 12,
@@ -104,34 +146,20 @@ class ItemBoxState extends State<ItemBox> {
                         ),
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () => widget.selectType!(false),
-                      child: Container(
-                        padding: const EdgeInsets.only(left: 15),
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color:
-                                widget.selection ? Colors.grey : Colors.green,
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(25),
-                            ),
-                          ),
-                          child: const Text(
-                            "Fatura fechada",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
+                  ),
+                ],
+              ),
+              for (SelectionItem item in _listItems)
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CardTransactionListScreen(
+                        creditCards: _cards,
+                        selectedItem: item.name!,
                       ),
                     ),
-                  ],
-                ),
-              for (SelectionItem item in widget.items)
-                GestureDetector(
-                  onTap: widget.onLineClick,
+                  ),
                   child: Container(
                     height: 60,
                     decoration: const BoxDecoration(
@@ -210,15 +238,22 @@ class ItemBoxState extends State<ItemBox> {
                   bottom: 10,
                 ),
                 child: ElevatedButton(
-                  onPressed: widget.onClick,
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CardScreen(
+                        onPop: widget.onPop,
+                      ),
+                    ),
+                  ),
                   style: const ButtonStyle(
                     backgroundColor: WidgetStatePropertyAll(
                       Colors.purple,
                     ),
                   ),
-                  child: Text(
-                    widget.buttonText,
-                    style: const TextStyle(
+                  child: const Text(
+                    "Cadastrar cartão",
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
                     ),
@@ -236,9 +271,9 @@ class ItemBoxState extends State<ItemBox> {
                     ),
                   ),
                   Text(
-                    formatCurrency.format(widget.total.abs()),
-                    style: TextStyle(
-                      color: widget.total >= 0 ? Colors.white : Colors.red,
+                    formatCurrency.format(_total),
+                    style: const TextStyle(
+                      color: Colors.white,
                       fontSize: 18,
                     ),
                   )

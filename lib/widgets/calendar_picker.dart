@@ -107,11 +107,14 @@ class CalendarPickerState extends State<CalendarPicker>
                         size: 24,
                       ),
                     ),
-                    Text(
-                      _currentYear.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
+                    Material(
+                      color: Colors.transparent,
+                      child: Text(
+                        _currentYear.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                        ),
                       ),
                     ),
                     IconButton(
