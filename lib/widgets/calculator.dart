@@ -1,3 +1,4 @@
+import 'package:cash_manager/models/enum/calculator_type.dart';
 import 'package:cash_manager/widgets/box.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -8,12 +9,12 @@ class Calculator extends StatefulWidget {
     super.key,
     required this.onClick,
     required this.balance,
-    this.type,
+    this.type = CalculatorType.normal,
   });
 
   final Function(double) onClick;
   final double balance;
-  final bool? type;
+  final CalculatorType type;
 
   @override
   CalculatorState createState() => CalculatorState();
@@ -59,16 +60,6 @@ class CalculatorState extends State<Calculator> {
         _totalText += text;
       }
     });
-  }
-
-  Color _getColor() {
-    if (widget.type == null) {
-      return Colors.purple;
-    } else if (widget.type!) {
-      return Colors.green;
-    } else {
-      return Colors.red;
-    }
   }
 
   @override
@@ -164,13 +155,13 @@ class CalculatorState extends State<Calculator> {
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(
                           width: 2.0,
-                          color: _getColor(),
+                          color: widget.type.color,
                         ),
                       ),
                       child: Text(
                         "Cancelar",
                         style: TextStyle(
-                          color: _getColor(),
+                          color: widget.type.color,
                           fontSize: 18,
                         ),
                       ),
@@ -185,7 +176,8 @@ class CalculatorState extends State<Calculator> {
                             double.parse(_totalText.replaceAll(",", ".")));
                       },
                       style: ButtonStyle(
-                        backgroundColor: WidgetStatePropertyAll(_getColor()),
+                        backgroundColor:
+                            WidgetStatePropertyAll(widget.type.color),
                       ),
                       child: const Text(
                         "Confirmar",

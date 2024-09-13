@@ -1,18 +1,21 @@
-import 'package:animated_toggle_switch/animated_toggle_switch.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
-import 'package:cash_manager/models/card_transaction.dart';
+import 'package:cash_manager/models/credit_card.dart';
+import 'package:cash_manager/models/dto/card_transaction_dto.dart';
+import 'package:cash_manager/models/dto/select_image_item.dart';
 import 'package:cash_manager/models/invoice.dart';
-import 'package:cash_manager/models/selection_item.dart';
-import 'package:cash_manager/services/database/queries/card_transaction_query.dart';
-import 'package:cash_manager/services/database/queries/category_query.dart';
-import 'package:cash_manager/services/database/queries/credit_card_query.dart';
-import 'package:cash_manager/services/database/queries/invoice_query.dart';
+import 'package:cash_manager/models/transaction_category.dart';
+import 'package:cash_manager/services/card_transaction_service.dart';
+import 'package:cash_manager/services/credit_card_service.dart';
+import 'package:cash_manager/services/invoice_service.dart';
+import 'package:cash_manager/services/transaction_category_service.dart';
 import 'package:cash_manager/widgets/box.dart';
 import 'package:cash_manager/widgets/calculator.dart';
 import 'package:cash_manager/widgets/custom_toast.dart';
 import 'package:cash_manager/widgets/header.dart';
 import 'package:cash_manager/widgets/insert_field.dart';
-import 'package:cash_manager/widgets/selection.dart';
+import 'package:cash_manager/widgets/insert_select_image_field.dart';
+import 'package:cash_manager/widgets/insert_slide_field.dart';
+import 'package:cash_manager/widgets/insert_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -31,33 +34,25 @@ class CardTransactionScreen extends StatefulWidget {
 }
 
 class CardTransactionScreenState extends State<CardTransactionScreen> {
-  double accountTotal = 0;
   final _formatCurrency = NumberFormat.simpleCurrency(locale: "pt_BR");
 
+  double _transactionAmount = 0;
   DateTime _selectedDate = DateTime.now();
-
   final _descriptionController = TextEditingController();
+  CreditCard? _selectedCard;
+  List<CreditCard> _cards = [];
+  TransactionCategory? _selectedCategory;
+  List<TransactionCategory> _categories = [];
+  bool _reccurence = false;
 
-  int? _cardId;
-  String? _cardName;
-  ImageProvider<Object>? _cardBankIcon;
-
-  int? _categoryId;
-  ImageProvider<Object>? _categoryImage;
-  String? _categoryName = "Categoria";
-
-  var _reccurence = false;
-
-  late Future<List<SelectionItem>> _cards;
-
-  late FToast fToast;
+  late FToast _fToast;
 
   @override
   void initState() {
     super.initState();
-    _getAccounts();
-    fToast = FToast();
-    fToast.init(context);
+    _initData();
+    _fToast = FToast();
+    _fToast.init(context);
   }
 
   @override
@@ -66,33 +61,43 @@ class CardTransactionScreenState extends State<CardTransactionScreen> {
     super.dispose();
   }
 
-  _getAccounts() async {
-    _cards = CreditCardQuery.selectSelectionItems();
-    List<SelectionItem> cards = await _cards;
-    if (cards.isNotEmpty) {
-      setState(() {
-        _cardBankIcon = cards[0].image;
-        _cardName = cards[0].name;
-        _cardId = cards[0].id;
-      });
-    }
+  _initData() async {
+    List<CreditCard> tempCards = await CreditCardService.findAll();
+    List<TransactionCategory> tempCategories =
+        await TransactionCategoryService.findByType(false);
+    setState(() {
+      _cards = tempCards;
+      _categories = tempCategories;
+    });
   }
 
-  _selectAccount(SelectionItem card) {
-    FocusScope.of(context).requestFocus(FocusNode());
+  List<SelectImageItem> _convertCardsToSelect() {
+    return _cards
+        .map((card) => SelectImageItem(
+              id: card.id,
+              image: card.brand.image,
+              text: card.description,
+              object: card,
+            ))
+        .toList();
+  }
+
+  List<SelectImageItem> _convertCategoriesToSelect() {
+    return _categories
+        .map((category) => SelectImageItem(
+              id: category.id,
+              image: category.image,
+              text: category.name,
+              object: category,
+            ))
+        .toList();
+  }
+
+  _setTransactionAmount(double balance) {
     setState(() {
-      _cardBankIcon = card.image;
-      _cardName = card.name;
-      _cardId = card.id;
+      _transactionAmount = balance;
     });
     Navigator.pop(context);
-  }
-
-  _setBalance(double balance) {
-    setState(() {
-      accountTotal = balance;
-      Navigator.pop(context);
-    });
   }
 
   _selectDate() async {
@@ -110,19 +115,29 @@ class CardTransactionScreenState extends State<CardTransactionScreen> {
     }
   }
 
-  _selectCategory(SelectionItem accountType) {
-    FocusScope.of(context).requestFocus(FocusNode());
+  _selectCard(dynamic card) {
     setState(() {
-      _categoryId = accountType.id;
-      _categoryImage = accountType.image;
-      _categoryName = accountType.name;
+      _selectedCard = card;
     });
     Navigator.pop(context);
   }
 
+  _selectCategory(dynamic category) {
+    setState(() {
+      _selectedCategory = category;
+    });
+    Navigator.pop(context);
+  }
+
+  _setReccurence(bool reccurence) {
+    setState(() {
+      _reccurence = reccurence;
+    });
+  }
+
   _showToast(String message) {
     FocusScope.of(context).requestFocus(FocusNode());
-    fToast.showToast(
+    _fToast.showToast(
       child: CustomToast(
         message: message,
       ),
@@ -144,32 +159,27 @@ class CardTransactionScreenState extends State<CardTransactionScreen> {
     );
   }
 
-  _setReccurence(bool recurrence) {
-    setState(() {
-      _reccurence = recurrence;
-    });
-  }
-
   _saveTransaction() async {
-    if (_cardId == null) {
-      _showToast("Selecione o cartão");
+    if (_transactionAmount == 0) {
+      _showToast("Selecione o valor da transação");
     } else if (_descriptionController.text.isEmpty) {
       _showToast("Preencha a descrição");
-    } else if (_categoryId == null) {
+    } else if (_selectedCard == null) {
+      _showToast("Selecione o cartão");
+    } else if (_selectedCategory == null) {
       _showToast("Selecione a categoria");
     } else {
-      Invoice invoice =
-          await InvoiceQuery.getByCardIdAndDate(_cardId!, _selectedDate);
-      CardTransaction cardTransaction = CardTransaction(
+      Invoice invoice = await InvoiceService.findByCreditCardAndDate(
+          _selectedCard!, _selectedDate);
+      CardTransactionDTO cardTransaction = CardTransactionDTO(
         description: _descriptionController.text.trim(),
-        amount: accountTotal,
-        categoryId: _categoryId!,
+        date: _selectedDate,
+        amount: _transactionAmount,
+        categoryId: _selectedCategory!.id,
+        invoiceId: invoice.id,
         recurrence: _reccurence,
-        invoice: invoice,
-        date: DateTime(
-            _selectedDate.year, _selectedDate.month, _selectedDate.day),
       );
-      CardTransactionQuery.createTransaction(cardTransaction);
+      CardTransactionService.createTransaction(cardTransaction);
       Navigator.pop(context);
     }
   }
@@ -178,38 +188,39 @@ class CardTransactionScreenState extends State<CardTransactionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF141414),
-      body: SingleChildScrollView(
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Header(
-              text: "Nova Transação",
+              text: "Nova transação",
             ),
             GestureDetector(
               onTap: () => showDialog<String>(
                 context: context,
                 builder: (BuildContext context) => Calculator(
-                  balance: accountTotal,
-                  onClick: _setBalance,
+                  balance: _transactionAmount,
+                  onClick: _setTransactionAmount,
                 ),
               ),
               child: Container(
                 padding: const EdgeInsets.only(
                   left: 25,
                 ),
-                height: (MediaQuery.of(context).size.height * 10) / 100,
+                height: 100,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      "Valor total",
+                      "Valor da transação",
                       style: TextStyle(
                         color: Color(0xA69E9E9E),
                         fontSize: 16,
                       ),
                     ),
                     Text(
-                      _formatCurrency.format(accountTotal),
+                      _formatCurrency.format(_transactionAmount),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 32,
@@ -219,185 +230,95 @@ class CardTransactionScreenState extends State<CardTransactionScreen> {
                 ),
               ),
             ),
-            Stack(
-              children: [
-                Box(
-                  width: 100,
-                  height: (MediaQuery.of(context).size.height * 80) / 100,
-                  bottom: false,
-                  top: true,
-                  child: Column(
-                    children: [
-                      InsertField(
-                        startIcon: FontAwesomeIcons.calendarCheck,
-                        startText:
-                            DateFormat("dd MMM yyyy").format(_selectedDate),
-                        finalIcon: FontAwesomeIcons.chevronRight,
-                        onClick: _selectDate,
-                      ),
-                      InsertField(
-                        startIcon: FontAwesomeIcons.pen,
-                        hint: "Descrição",
-                        controller: _descriptionController,
-                      ),
-                      InsertField(
-                        startImage: _cardBankIcon,
-                        startIcon: _cardBankIcon == null
-                            ? FontAwesomeIcons.buildingColumns
-                            : null,
-                        startText: _cardName ?? "Escolha uma conta",
-                        finalIcon: FontAwesomeIcons.chevronRight,
-                        onClick: () => showDialog<String>(
-                          context: context,
-                          builder: (BuildContext context) => Selection(
-                            onClick: (bank) => _selectAccount(bank),
-                            items: _cards,
-                            emptyList: "Crie uma conta para continuar",
-                          ),
+            Expanded(
+              child: Stack(
+                children: [
+                  Box(
+                    width: 100,
+                    bottom: false,
+                    top: true,
+                    child: Column(
+                      children: [
+                        InsertField(
+                          icon: FontAwesomeIcons.calendarCheck,
+                          hint: DateFormat("dd MMM yyyy").format(_selectedDate),
+                          onClick: _selectDate,
                         ),
-                      ),
-                      InsertField(
-                        startImageIcon: _categoryImage,
-                        startIcon: _categoryImage == null
-                            ? FontAwesomeIcons.buildingColumns
-                            : null,
-                        startText: _categoryName ?? "Categoria",
-                        finalIcon: FontAwesomeIcons.chevronRight,
-                        onClick: () => showDialog<String>(
-                          context: context,
-                          builder: (BuildContext context) => Selection(
-                            onClick: (type) => _selectCategory(type),
-                            items: CategoryQuery.selectSelectionItems(false),
-                          ),
+                        InsertTextField(
+                          icon: FontAwesomeIcons.pen,
+                          hint: "Descrição",
+                          controller: _descriptionController,
                         ),
-                      ),
-                      InsertField(
-                        startIcon: FontAwesomeIcons.calendarDay,
-                        startText: "Transação recorrente",
-                        finalIcon: FontAwesomeIcons.chevronRight,
-                        finalWidget: CustomAnimatedToggleSwitch<bool>(
-                          current: _reccurence,
-                          values: const [false, true],
-                          spacing: 0.0,
-                          indicatorSize: const Size.square(22.0),
-                          animationDuration: const Duration(milliseconds: 200),
-                          animationCurve: Curves.linear,
-                          onChanged: _setReccurence,
-                          iconBuilder: (context, local, global) {
-                            return const SizedBox();
-                          },
-                          onTap: (_) => _setReccurence(!_reccurence),
-                          wrapperBuilder: (context, global, child) {
-                            return Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Positioned(
-                                  left: 10.0,
-                                  right: 10.0,
-                                  height: 20.0,
-                                  child: DecoratedBox(
-                                    decoration: BoxDecoration(
-                                      color: Color.lerp(
-                                        Colors.red,
-                                        Colors.green,
-                                        global.position,
-                                      ),
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(50.0)),
-                                    ),
-                                  ),
-                                ),
-                                child,
-                              ],
-                            );
-                          },
-                          foregroundIndicatorBuilder: (context, global) {
-                            return SizedBox.fromSize(
-                              size: global.indicatorSize,
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  color: Color.lerp(
-                                    Colors.white,
-                                    Colors.white,
-                                    global.position,
-                                  ),
-                                  borderRadius: const BorderRadius.all(
-                                    Radius.circular(50.0),
-                                  ),
-                                ),
-                                child: _reccurence
-                                    ? const Center(
-                                        child: Padding(
-                                          padding: EdgeInsets.only(top: 2),
-                                          child: FaIcon(
-                                            FontAwesomeIcons.check,
-                                            color: Colors.green,
-                                            size: 16,
-                                          ),
-                                        ),
-                                      )
-                                    : const Center(
-                                        child: Padding(
-                                          padding: EdgeInsets.only(top: 2),
-                                          child: FaIcon(
-                                            FontAwesomeIcons.xmark,
-                                            color: Colors.red,
-                                            size: 16,
-                                          ),
-                                        ),
-                                      ),
-                              ),
-                            );
-                          },
+                        InsertSelectImageField(
+                          defaultIcon: FontAwesomeIcons.buildingColumns,
+                          hint:
+                              _selectedCard?.description ?? "Escolha um cartão",
+                          image: _selectedCard?.brand.image,
+                          itemList: _convertCardsToSelect(),
+                          onClick: _selectCard,
                         ),
-                      ),
-                    ],
+                        InsertSelectImageField(
+                          defaultIcon: FontAwesomeIcons.list,
+                          hint: _selectedCategory?.name ??
+                              "Escolha uma categoria",
+                          image: _selectedCategory?.image,
+                          itemList: _convertCategoriesToSelect(),
+                          onClick: _selectCategory,
+                        ),
+                        InsertSlideField(
+                          icon: FontAwesomeIcons.receipt,
+                          hint: "Criar recorrência",
+                          value: _reccurence,
+                          onClick: _setReccurence,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Positioned.fill(
-                  bottom: MediaQuery.of(context).viewInsets.bottom + 50,
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(35),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(
-                              0.3,
+                  Positioned.fill(
+                    bottom: 50,
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(35),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(
+                                0.3,
+                              ),
+                              spreadRadius: 5,
+                              blurRadius: 10,
+                              offset: const Offset(
+                                0,
+                                0,
+                              ),
                             ),
-                            spreadRadius: 5,
-                            blurRadius: 10,
-                            offset: const Offset(
-                              0,
-                              0,
-                            ),
-                          ),
-                        ],
-                      ),
-                      child: IconButton(
-                        style: const ButtonStyle(
-                          fixedSize: WidgetStatePropertyAll(
-                            Size(65, 65),
-                          ),
-                          backgroundColor: WidgetStatePropertyAll(
-                            Colors.purple,
-                          ),
-                          shape: WidgetStatePropertyAll(
-                            CircleBorder(),
-                          ),
+                          ],
                         ),
-                        onPressed: _saveTransaction,
-                        icon: const Icon(
-                          FontAwesomeIcons.check,
-                          color: Colors.white,
-                          size: 26,
+                        child: IconButton(
+                          style: const ButtonStyle(
+                            fixedSize: WidgetStatePropertyAll(
+                              Size(65, 65),
+                            ),
+                            backgroundColor: WidgetStatePropertyAll(
+                              Colors.blue,
+                            ),
+                            shape: WidgetStatePropertyAll(
+                              CircleBorder(),
+                            ),
+                          ),
+                          onPressed: () => _saveTransaction(),
+                          icon: const Icon(
+                            FontAwesomeIcons.check,
+                            color: Colors.white,
+                            size: 26,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),

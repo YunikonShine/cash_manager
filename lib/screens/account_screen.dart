@@ -1,15 +1,20 @@
 import 'package:cash_manager/helpers/hex_color.dart';
-import 'package:cash_manager/models/account.dart';
-import 'package:cash_manager/models/selection_item.dart';
-import 'package:cash_manager/services/database/queries/account_query.dart';
-import 'package:cash_manager/services/database/queries/bank_query.dart';
-import 'package:cash_manager/widgets/bank_color_picker.dart';
+import 'package:cash_manager/models/bank.dart';
+import 'package:cash_manager/models/dto/account_dto.dart';
+import 'package:cash_manager/models/dto/select_icon_item.dart';
+import 'package:cash_manager/models/dto/select_image_item.dart';
+import 'package:cash_manager/models/enum/account_type.dart';
+import 'package:cash_manager/models/enum/calculator_type.dart';
+import 'package:cash_manager/services/account_service.dart';
+import 'package:cash_manager/services/bank_service.dart';
 import 'package:cash_manager/widgets/box.dart';
 import 'package:cash_manager/widgets/calculator.dart';
 import 'package:cash_manager/widgets/custom_toast.dart';
 import 'package:cash_manager/widgets/header.dart';
-import 'package:cash_manager/widgets/insert_field.dart';
-import 'package:cash_manager/widgets/selection.dart';
+import 'package:cash_manager/widgets/insert_color_field.dart';
+import 'package:cash_manager/widgets/insert_select_icon_field.dart';
+import 'package:cash_manager/widgets/insert_select_image_field.dart';
+import 'package:cash_manager/widgets/insert_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -28,65 +33,94 @@ class AccountScreen extends StatefulWidget {
 }
 
 class AccountScreenState extends State<AccountScreen> {
-  double accountTotal = 0;
   final _formatCurrency = NumberFormat.simpleCurrency(locale: "pt_BR");
+  late FToast _fToast;
+
+  double _accountTotal = 0;
+
+  Bank? _selectedBank;
+  List<Bank> _banks = List.empty();
+
   final _descriptionController = TextEditingController();
 
-  ImageProvider<Object>? _bankIcon;
-  String? _bankName;
-  int? _bankId;
-  int? _accountId;
-  String? _accountName;
-  IconData? _accountIcon = FontAwesomeIcons.wallet;
-  Color? _bankColor;
+  AccountType? _selectedAccountType;
 
-  late FToast fToast;
+  Color? _selectedColor;
 
   @override
   void initState() {
     super.initState();
-    fToast = FToast();
-    fToast.init(context);
+    _fToast = FToast();
+    _fToast.init(context);
+    _initData();
   }
 
   @override
   void dispose() {
-    widget.onPop();
     super.dispose();
+    widget.onPop();
   }
 
-  _selectBank(SelectionItem bank) {
-    FocusScope.of(context).requestFocus(FocusNode());
+  _initData() async {
+    List<Bank> banksTemp = await BankService.findAll();
     setState(() {
-      _bankIcon = bank.image;
-      _bankName = bank.name;
-      _bankId = bank.id;
-      _bankColor = HexColor.fromHex(bank.color!);
+      _banks = banksTemp;
+    });
+  }
+
+  List<SelectImageItem> _convertBanksToSelect() {
+    return _banks
+        .map((bank) => SelectImageItem(
+              id: bank.id,
+              image: bank.image,
+              text: bank.name,
+              object: bank,
+            ))
+        .toList();
+  }
+
+  List<SelectIconItem> _convertAccountTypeToSelect() {
+    return AccountType.values
+        .map((accountType) => SelectIconItem(
+              id: accountType.id,
+              icon: accountType.icon,
+              text: accountType.name,
+              object: accountType,
+            ))
+        .toList();
+  }
+
+  _setBalance(double balance) {
+    setState(() {
+      _accountTotal = balance;
+    });
+    Navigator.pop(context);
+  }
+
+  _selectBank(dynamic bank) {
+    setState(() {
+      _selectedBank = bank;
+      _selectedColor = HexColor.fromHex(_selectedBank!.color);
+    });
+    Navigator.pop(context);
+  }
+
+  _selectAccountType(dynamic accountType) {
+    setState(() {
+      _selectedAccountType = accountType;
     });
     Navigator.pop(context);
   }
 
   _selectColor(Color color) {
-    FocusScope.of(context).requestFocus(FocusNode());
     setState(() {
-      _bankColor = color;
-    });
-    Navigator.pop(context);
-  }
-
-  _selectType(SelectionItem accountType) {
-    FocusScope.of(context).requestFocus(FocusNode());
-    setState(() {
-      _accountId = accountType.id;
-      _accountName = accountType.name;
-      _accountIcon = accountType.icon;
+      _selectedColor = color;
     });
     Navigator.pop(context);
   }
 
   _showToast(String message) {
-    FocusScope.of(context).requestFocus(FocusNode());
-    fToast.showToast(
+    _fToast.showToast(
       child: CustomToast(
         message: message,
       ),
@@ -109,42 +143,35 @@ class AccountScreenState extends State<AccountScreen> {
   }
 
   _saveAccount() {
-    if (_bankId == null) {
+    if (_selectedBank == null) {
       _showToast("Selecione o banco");
     } else if (_descriptionController.text.isEmpty) {
       _showToast("Preencha a descrição");
-    } else if (_accountId == null) {
+    } else if (_selectedAccountType == null) {
       _showToast("Selecione o tipo de conta");
-    } else if (_bankColor == null) {
+    } else if (_selectedColor == null) {
       _showToast("Selecione a cor");
     } else {
-      Account account = Account(
-        bankId: _bankId!,
-        color: _bankColor!.toHex(),
+      AccountDTO account = AccountDTO(
         description: _descriptionController.text.trim(),
-        type: _accountId!,
-        balance: accountTotal,
-        initialBalance: accountTotal,
+        color: _selectedColor!.toHex(),
+        type: _selectedAccountType!.id,
+        bankId: _selectedBank!.id,
+        initialBalance: _accountTotal,
       );
-      AccountQuery.createAccount(account);
+      AccountService.createAccount(account);
       Navigator.pop(context);
     }
-  }
-
-  _setBalance(double balance) {
-    setState(() {
-      accountTotal = balance;
-      Navigator.pop(context);
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF141414),
-      body: SingleChildScrollView(
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Header(
               text: "Nova Conta",
@@ -153,15 +180,16 @@ class AccountScreenState extends State<AccountScreen> {
               onTap: () => showDialog<String>(
                 context: context,
                 builder: (BuildContext context) => Calculator(
-                  balance: accountTotal,
+                  balance: _accountTotal,
                   onClick: _setBalance,
+                  type: CalculatorType.normal,
                 ),
               ),
               child: Container(
                 padding: const EdgeInsets.only(
                   left: 25,
                 ),
-                height: (MediaQuery.of(context).size.height * 10) / 100,
+                height: 100,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -173,7 +201,7 @@ class AccountScreenState extends State<AccountScreen> {
                       ),
                     ),
                     Text(
-                      _formatCurrency.format(accountTotal),
+                      _formatCurrency.format(_accountTotal),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 32,
@@ -183,113 +211,88 @@ class AccountScreenState extends State<AccountScreen> {
                 ),
               ),
             ),
-            Stack(
-              children: [
-                Box(
-                  width: 100,
-                  height: (MediaQuery.of(context).size.height * 80) / 100,
-                  bottom: false,
-                  top: true,
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          top: 10,
+            Expanded(
+              child: Stack(
+                children: [
+                  Box(
+                    width: 100,
+                    bottom: false,
+                    top: true,
+                    child: Column(
+                      children: [
+                        InsertSelectImageField(
+                          defaultIcon: FontAwesomeIcons.buildingColumns,
+                          hint: _selectedBank?.name ?? "Escolha um banco",
+                          image: _selectedBank?.image,
+                          itemList: _convertBanksToSelect(),
+                          onClick: _selectBank,
                         ),
-                        child: InsertField(
-                          startImage: _bankIcon,
-                          startIcon: _bankIcon == null
-                              ? FontAwesomeIcons.buildingColumns
-                              : null,
-                          startText: _bankName ?? "Escolha um banco",
-                          finalIcon: FontAwesomeIcons.chevronRight,
-                          onClick: () => showDialog<String>(
-                            context: context,
-                            builder: (BuildContext context) => Selection(
-                              onClick: (bank) => _selectBank(bank),
-                              items: BankQuery.selectSelectionItems(),
-                            ),
-                          ),
+                        InsertTextField(
+                          icon: FontAwesomeIcons.pen,
+                          hint: "Descrição",
+                          controller: _descriptionController,
                         ),
-                      ),
-                      InsertField(
-                        startIcon: FontAwesomeIcons.pen,
-                        hint: "Descrição",
-                        controller: _descriptionController,
-                      ),
-                      InsertField(
-                        startIcon: _accountIcon,
-                        startText: _accountName ?? "Tipo de conta",
-                        finalIcon: FontAwesomeIcons.chevronRight,
-                        onClick: () => showDialog<String>(
-                          context: context,
-                          builder: (BuildContext context) => Selection(
-                            onClick: (type) => _selectType(type),
-                            items:
-                                Future.value(SelectionItem.fromAccountTypes()),
-                          ),
+                        InsertSelectIconField(
+                          defaultIcon: FontAwesomeIcons.wallet,
+                          hint: _selectedAccountType?.name ?? "Tipo de conta",
+                          icon: _selectedAccountType?.icon,
+                          itemList: _convertAccountTypeToSelect(),
+                          onClick: _selectAccountType,
                         ),
-                      ),
-                      InsertField(
-                        startIcon: FontAwesomeIcons.swatchbook,
-                        startText: "Cor",
-                        color: _bankColor,
-                        finalIcon: FontAwesomeIcons.chevronRight,
-                        onClick: () => showDialog<String>(
-                          context: context,
-                          builder: (BuildContext context) => BankColorPicker(
-                            color: _bankColor,
-                            onChange: (color) => _selectColor(color),
-                          ),
+                        InsertColorField(
+                          icon: FontAwesomeIcons.swatchbook,
+                          hint: "Cor",
+                          color: _selectedColor,
+                          selectColor: _selectColor,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                Positioned.fill(
-                  bottom: MediaQuery.of(context).viewInsets.bottom + 50,
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(35),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(
-                              0.3,
+                  Positioned.fill(
+                    bottom: 50,
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(35),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(
+                                0.3,
+                              ),
+                              spreadRadius: 5,
+                              blurRadius: 10,
+                              offset: const Offset(
+                                0,
+                                0,
+                              ),
                             ),
-                            spreadRadius: 5,
-                            blurRadius: 10,
-                            offset: const Offset(
-                              0,
-                              0,
-                            ),
-                          ),
-                        ],
-                      ),
-                      child: IconButton(
-                        style: const ButtonStyle(
-                          fixedSize: WidgetStatePropertyAll(
-                            Size(65, 65),
-                          ),
-                          backgroundColor: WidgetStatePropertyAll(
-                            Colors.blue,
-                          ),
-                          shape: WidgetStatePropertyAll(
-                            CircleBorder(),
-                          ),
+                          ],
                         ),
-                        onPressed: () => _saveAccount(),
-                        icon: const Icon(
-                          FontAwesomeIcons.check,
-                          color: Colors.white,
-                          size: 26,
+                        child: IconButton(
+                          style: const ButtonStyle(
+                            fixedSize: WidgetStatePropertyAll(
+                              Size(65, 65),
+                            ),
+                            backgroundColor: WidgetStatePropertyAll(
+                              Colors.blue,
+                            ),
+                            shape: WidgetStatePropertyAll(
+                              CircleBorder(),
+                            ),
+                          ),
+                          onPressed: () => _saveAccount(),
+                          icon: const Icon(
+                            FontAwesomeIcons.check,
+                            color: Colors.white,
+                            size: 26,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),

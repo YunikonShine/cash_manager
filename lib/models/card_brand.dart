@@ -1,54 +1,23 @@
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:cash_manager/models/enum/image_type.dart';
+import 'package:cash_manager/models/image_data.dart';
 
-enum CardBrand { visa, master }
+class CardBrand {
+  late int id;
+  late String name;
+  late ImageData image;
 
-extension CardBrandExtension on CardBrand {
-  String get name {
-    switch (this) {
-      case CardBrand.visa:
-        return 'Visa';
-      case CardBrand.master:
-        return 'Mastercard';
-    }
-  }
+  CardBrand({
+    required this.id,
+    required this.name,
+    required this.image,
+  });
 
-  String get image {
-    switch (this) {
-      case CardBrand.visa:
-        return 'visa';
-      case CardBrand.master:
-        return 'mastercard';
-    }
-  }
-
-  int get id {
-    switch (this) {
-      case CardBrand.visa:
-        return 1;
-      case CardBrand.master:
-        return 2;
-    }
-  }
-
-  IconData get icon {
-    switch (this) {
-      case CardBrand.visa:
-        return FontAwesomeIcons.ccVisa;
-      case CardBrand.master:
-        return FontAwesomeIcons.ccMastercard;
-    }
-  }
-}
-
-class CardBrandHelper {
-  static CardBrand fromId(int id) {
-    switch (id) {
-      case 1:
-        return CardBrand.visa;
-      case 2:
-        return CardBrand.master;
-    }
-    throw Exception();
+  CardBrand.fromMap(Map<String, dynamic> data) {
+    id = data['id'];
+    name = data['name'];
+    image = ImageData(
+      imagePath: "assets/card_brands/${data['image']}.png",
+      type: ImageType.image,
+    );
   }
 }

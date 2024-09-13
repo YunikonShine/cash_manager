@@ -1,1 +1,0 @@
-class IdNotFoundException implements Exception {}

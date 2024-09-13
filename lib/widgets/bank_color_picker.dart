@@ -16,17 +16,17 @@ class BankColorPicker extends StatefulWidget {
 }
 
 class BankColorPickerState extends State<BankColorPicker> {
-  late Color selectionTemp;
+  late Color _selectionTemp;
 
   @override
   void initState() {
     super.initState();
-    selectionTemp = widget.color ?? Colors.purple;
+    _selectionTemp = widget.color ?? Colors.purple;
   }
 
   _onChangeTemp(Color color) {
     setState(() {
-      selectionTemp = color;
+      _selectionTemp = color;
     });
   }
 
@@ -46,7 +46,7 @@ class BankColorPickerState extends State<BankColorPicker> {
       ),
       content: SingleChildScrollView(
         child: HueRingPicker(
-          pickerColor: selectionTemp,
+          pickerColor: _selectionTemp,
           onColorChanged: _onChangeTemp,
           enableAlpha: true,
           displayThumbColor: true,
@@ -54,7 +54,7 @@ class BankColorPickerState extends State<BankColorPicker> {
       ),
       actions: [
         TextButton(
-          onPressed: () => widget.onChange(selectionTemp),
+          onPressed: () => widget.onChange(_selectionTemp),
           child: const Text(
             "Confirmar",
             style: TextStyle(

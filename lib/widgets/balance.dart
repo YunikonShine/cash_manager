@@ -1,5 +1,5 @@
-import 'package:cash_manager/models/transaction_type.dart';
-import 'package:cash_manager/screens/transaction_list_screen.dart';
+import 'package:cash_manager/models/enum/transaction_type.dart';
+import 'package:cash_manager/screens/account_transaction_list_screen.dart';
 import 'package:cash_manager/widgets/box.dart';
 import 'package:cash_manager/widgets/calendar_picker.dart';
 import 'package:cash_manager/widgets/icon_filled.dart';
@@ -29,7 +29,7 @@ class Balance extends StatefulWidget {
 
 class BalanceState extends State<Balance> {
   bool _eyeView = true;
-  final formatCurrency = NumberFormat.simpleCurrency(locale: "pt_BR");
+  final _formatCurrency = NumberFormat.simpleCurrency(locale: "pt_BR");
 
   _selectMonth(DateTime dateTime) {
     widget.setDate(dateTime);
@@ -66,7 +66,7 @@ class BalanceState extends State<Balance> {
             onPressed: () => showDialog<String>(
               context: context,
               builder: (BuildContext context) => CalendarPicker(
-                onTap: _selectMonth,
+                selectDate: _selectMonth,
                 selectedDate: widget.selectedDate,
               ),
             ),
@@ -98,7 +98,9 @@ class BalanceState extends State<Balance> {
             ),
           ),
           Text(
-            _eyeView ? formatCurrency.format(widget.accountTotal) : 'R\$ *****',
+            _eyeView
+                ? _formatCurrency.format(widget.accountTotal)
+                : 'R\$ *****',
             style: const TextStyle(
               color: Colors.white,
               fontSize: 24,
@@ -115,14 +117,16 @@ class BalanceState extends State<Balance> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               GestureDetector(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const TransactionListScreen(
-                      transactionType: TransactionType.income,
+                onTap: () => {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AccountTransactionListScreen(
+                        transactionType: TransactionType.income,
+                      ),
                     ),
                   ),
-                ),
+                },
                 child: Row(
                   children: [
                     const IconFilled(
@@ -141,7 +145,7 @@ class BalanceState extends State<Balance> {
                         ),
                         Text(
                           _eyeView
-                              ? formatCurrency.format(widget.accountIncome)
+                              ? _formatCurrency.format(widget.accountIncome)
                               : 'R\$ *****',
                           style: const TextStyle(
                             color: Colors.green,
@@ -154,14 +158,16 @@ class BalanceState extends State<Balance> {
                 ),
               ),
               GestureDetector(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const TransactionListScreen(
-                      transactionType: TransactionType.expense,
+                onTap: () => {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AccountTransactionListScreen(
+                        transactionType: TransactionType.expense,
+                      ),
                     ),
                   ),
-                ),
+                },
                 child: Row(
                   children: [
                     const IconFilled(
@@ -180,7 +186,7 @@ class BalanceState extends State<Balance> {
                         ),
                         Text(
                           _eyeView
-                              ? formatCurrency.format(widget.accountExpenses)
+                              ? _formatCurrency.format(widget.accountExpenses)
                               : 'R\$ *****',
                           style: const TextStyle(
                             color: Colors.red,

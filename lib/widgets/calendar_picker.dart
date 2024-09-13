@@ -5,12 +5,12 @@ import 'package:intl/intl.dart';
 class CalendarPicker extends StatefulWidget {
   const CalendarPicker({
     super.key,
-    required this.onTap,
+    required this.selectDate,
     this.selectedDate,
     this.month = true,
   });
 
-  final Function(DateTime dateTime) onTap;
+  final Function(DateTime dateTime) selectDate;
   final DateTime? selectedDate;
   final bool month;
 
@@ -53,14 +53,12 @@ class CalendarPickerState extends State<CalendarPicker>
     if (!current && _currentYear != null) {
       year = _currentYear!;
     }
-    widget.onTap(DateTime(year, month));
-    Navigator.pop(context);
+    widget.selectDate(DateTime(year, month));
   }
 
   _selectDay(int day) {
     DateTime date = DateTime.now();
-    widget.onTap(DateTime(date.year, 1, day));
-    Navigator.pop(context);
+    widget.selectDate(DateTime(date.year, 1, day));
   }
 
   _nextYear() {

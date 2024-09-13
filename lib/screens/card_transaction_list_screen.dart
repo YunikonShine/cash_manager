@@ -1,19 +1,18 @@
 import 'dart:collection';
 
-import 'package:cash_manager/models/card_brand.dart';
 import 'package:cash_manager/models/card_transaction.dart';
 import 'package:cash_manager/models/credit_card.dart';
-import 'package:cash_manager/models/enum/invoice_status.dart';
-import 'package:cash_manager/models/header_dropdown_item.dart';
+import 'package:cash_manager/models/dto/header_dropdown_item.dart';
 import 'package:cash_manager/models/invoice.dart';
-import 'package:cash_manager/models/transaction_account.dart';
-import 'package:cash_manager/screens/home_screen.dart';
-import 'package:cash_manager/services/database/queries/card_transaction_query.dart';
-import 'package:cash_manager/services/database/queries/invoice_query.dart';
+import 'package:cash_manager/services/card_transaction_service.dart';
+import 'package:cash_manager/services/credit_card_service.dart';
+import 'package:cash_manager/services/invoice_service.dart';
+import 'package:cash_manager/widgets/bottom_bar.dart';
 import 'package:cash_manager/widgets/box.dart';
-import 'package:cash_manager/widgets/button_alert.dart';
 import 'package:cash_manager/widgets/calendar_picker.dart';
-import 'package:cash_manager/widgets/header.dart';
+import 'package:cash_manager/widgets/card_box_header.dart';
+import 'package:cash_manager/widgets/dropdown_header.dart';
+import 'package:cash_manager/widgets/floating_menu_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
@@ -21,12 +20,12 @@ import 'package:intl/intl.dart';
 class CardTransactionListScreen extends StatefulWidget {
   const CardTransactionListScreen({
     super.key,
-    required this.selectedItem,
-    required this.creditCards,
+    required this.selectedCard,
+    required this.selectedInvoice,
   });
 
-  final String selectedItem;
-  final List<CreditCard> creditCards;
+  final CreditCard selectedCard;
+  final Invoice selectedInvoice;
 
   @override
   CardTransactionListScreenState createState() =>
@@ -34,47 +33,48 @@ class CardTransactionListScreen extends StatefulWidget {
 }
 
 class CardTransactionListScreenState extends State<CardTransactionListScreen> {
+  late CreditCard _selectedCard;
+  late List<CreditCard> _cards = [];
+  late Invoice _selectedInvoice;
+
   DateTime _selectedDate = DateTime.now();
+
   final _formatCurrency = NumberFormat.simpleCurrency(locale: "pt_BR");
 
   Map<DateTime, List<CardTransaction>> _transactions = {};
 
-  late List<HeaderDropdownItem>? _headerItems;
-  late String _selectedItem;
-  late CreditCard _selectedCard;
-  late Invoice _selectedInvoice;
-
   @override
   void initState() {
     super.initState();
-    _selectedItem = widget.selectedItem;
-    _headerItems = widget.creditCards
-        .map((e) =>
-            HeaderDropdownItem(name: e.description, color: Colors.transparent))
-        .toList();
-    _setSelectedCard(_selectedItem);
-    _selectedInvoice = _selectedCard.currentInvoice!;
+    setState(() {
+      _selectedCard = widget.selectedCard;
+      _selectedInvoice = widget.selectedInvoice;
+    });
+    _getCards();
     _getTransactions();
   }
 
-  _setSelectedCard(String item) {
-    for (CreditCard card in widget.creditCards) {
+  _getCards() async {
+    List<CreditCard> tempCards = await CreditCardService.findAll();
+    setState(() {
+      _cards = tempCards;
+    });
+  }
+
+  _selectValue(String? item) async {
+    for (CreditCard card in _cards) {
       if (card.description == item) {
         setState(() {
           _selectedCard = card;
         });
       }
     }
+    await _setInvoice();
   }
 
   Future<void> _getTransactions() async {
-    List<CardTransaction> transactionTemp = [];
-    Invoice tempInvoice =
-        await InvoiceQuery.getByCardAndDate(_selectedCard, _selectedDate);
-    if (tempInvoice.id != null) {
-      transactionTemp =
-          await CardTransactionQuery.getTransactionByInvoice(tempInvoice.id!);
-    }
+    List<CardTransaction> transactionTemp =
+        await CardTransactionService.getTransactionsByInvoice(_selectedInvoice);
 
     SplayTreeMap<DateTime, List<CardTransaction>> map = SplayTreeMap();
 
@@ -88,31 +88,45 @@ class CardTransactionListScreenState extends State<CardTransactionListScreen> {
 
     setState(() {
       _transactions = LinkedHashMap.fromEntries(map.entries.toList().reversed);
-      _selectedInvoice = tempInvoice;
     });
   }
 
-  _selectValue(String? value) {
+  DateTime _getDateToInvoice() {
+    return DateTime(
+        _selectedDate.year, _selectedDate.month, _selectedCard.closeDay);
+  }
+
+  _setInvoice() async {
+    Invoice tempInvoice = await InvoiceService.findByCreditCardAndDate(
+        _selectedCard, _getDateToInvoice());
+    setState(() {
+      _selectedInvoice = tempInvoice;
+    });
     _getTransactions();
   }
 
-  _selectMonth(DateTime dateTime) {
+  _selectDate(DateTime dateTime) {
     setState(() {
       _selectedDate = dateTime;
     });
-    _getTransactions();
+    _setInvoice();
+    Navigator.pop(context);
   }
 
   _addMonth() {
-    DateTime date = DateTime(
-        _selectedDate.year, _selectedDate.month + 1, _selectedCard.closeDate);
-    _selectMonth(date);
+    DateTime date = DateTime(_selectedDate.year, _selectedDate.month + 1);
+    setState(() {
+      _selectedDate = date;
+    });
+    _setInvoice();
   }
 
   _subtractMonth() {
-    DateTime date = DateTime(
-        _selectedDate.year, _selectedDate.month - 1, _selectedCard.closeDate);
-    _selectMonth(date);
+    DateTime date = DateTime(_selectedDate.year, _selectedDate.month - 1);
+    setState(() {
+      _selectedDate = date;
+    });
+    _setInvoice();
   }
 
   String _formatedDate() {
@@ -166,7 +180,7 @@ class CardTransactionListScreenState extends State<CardTransactionListScreen> {
                           padding: const EdgeInsets.all(8),
                           child: Image(
                             image: AssetImage(
-                                "assets/categories/${transaction.category!.icon}.png"),
+                                transaction.category.image.imagePath),
                             fit: BoxFit.fill,
                           ),
                         ),
@@ -185,7 +199,7 @@ class CardTransactionListScreenState extends State<CardTransactionListScreen> {
                               ),
                             ),
                             Text(
-                              "${transaction.category!.name} | ${transaction.description}",
+                              "${transaction.category.name} | ${transaction.description}",
                               style: const TextStyle(
                                 color: Colors.grey,
                                 fontSize: 16,
@@ -212,405 +226,108 @@ class CardTransactionListScreenState extends State<CardTransactionListScreen> {
     return widgets;
   }
 
+  List<HeaderDropdownItem> _getDropdownItems() {
+    return _cards
+        .map((card) => HeaderDropdownItem(
+              name: card.description,
+              color: Colors.white,
+            ))
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => showDialog<String>(
-          context: context,
-          builder: (BuildContext context) =>
-              ButtonAlert(refresh: _getTransactions),
-        ),
-        child: const Icon(
-          FontAwesomeIcons.plus,
-        ),
+      floatingActionButton: FloatingMenuButton(
+        onPop: _getTransactions,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        height: 70,
-        color: const Color(0xFF4C4C4C),
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            SizedBox(
-              width: (MediaQuery.of(context).size.width * 40) / 100,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const HomeScreen(),
-                        ),
-                      );
-                    },
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          FontAwesomeIcons.house,
-                          color: Colors.white60,
-                        ),
-                        Text(
-                          "Dashboard",
-                          style: TextStyle(
-                            color: Colors.white60,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => {},
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          FontAwesomeIcons.listUl,
-                          color: Colors.purple,
-                        ),
-                        Text(
-                          "Transações",
-                          style: TextStyle(
-                            color: Colors.purple,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              width: (MediaQuery.of(context).size.width * 40) / 100,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  GestureDetector(
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          FontAwesomeIcons.coins,
-                          color: Colors.white60,
-                        ),
-                        Text(
-                          "Orçamentos",
-                          style: TextStyle(
-                            color: Colors.white60,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  GestureDetector(
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          FontAwesomeIcons.ellipsis,
-                          color: Colors.white60,
-                        ),
-                        Text(
-                          "Mais",
-                          style: TextStyle(
-                            color: Colors.white60,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+      bottomNavigationBar: const BottomBar(
+        selectedIndex: 1,
       ),
       backgroundColor: const Color(0xFF141414),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            height: (MediaQuery.of(context).size.height * 17) / 100,
-            child: Column(
-              children: [
-                Header(
-                  dropdown: true,
-                  selectedValue: _selectedItem,
-                  selectValue: _selectValue,
-                  hideBack: true,
-                  dropdownItems: _headerItems ?? [],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+      body: SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            DropdownHeader(
+              selectedValue: _selectedCard.description,
+              selectValue: _selectValue,
+              dropdownItems: _getDropdownItems(),
+            ),
+            SizedBox(
+              height: 70,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  IconButton(
+                    onPressed: _subtractMonth,
+                    icon: const FaIcon(
+                      FontAwesomeIcons.chevronLeft,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 150,
+                    child: TextButton(
+                      onPressed: () => showDialog<String>(
+                        context: context,
+                        builder: (BuildContext context) => CalendarPicker(
+                          selectedDate: _selectedDate,
+                          selectDate: _selectDate,
+                        ),
+                      ),
+                      child: Text(
+                        _formatedDate(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: _addMonth,
+                    icon: const FaIcon(
+                      FontAwesomeIcons.chevronRight,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Box(
+                width: 100,
+                top: true,
+                bottom: false,
+                child: Column(
                   children: [
-                    IconButton(
-                      onPressed: _subtractMonth,
-                      icon: const FaIcon(
-                        FontAwesomeIcons.chevronLeft,
-                        color: Colors.white,
-                        size: 18,
-                      ),
+                    CardBoxHeader(
+                      selectedCard: _selectedCard,
+                      selectedInvoice: _selectedInvoice,
                     ),
-                    SizedBox(
-                      width: 150,
-                      child: TextButton(
-                        onPressed: () => showDialog<String>(
-                          context: context,
-                          builder: (BuildContext context) => CalendarPicker(
-                            onTap: _selectMonth,
-                            selectedDate: _selectedDate,
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.only(bottom: 50),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: _transactionWidget(),
                           ),
                         ),
-                        child: Text(
-                          _formatedDate(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: _addMonth,
-                      icon: const FaIcon(
-                        FontAwesomeIcons.chevronRight,
-                        color: Colors.white,
-                        size: 18,
                       ),
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
-          Box(
-            width: 100,
-            top: true,
-            bottom: false,
-            height: (MediaQuery.of(context).size.height * 83) / 100,
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Container(
-                  padding: const EdgeInsets.only(bottom: 15),
-                  decoration: const BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Column(
-                        children: [
-                          Image(
-                            alignment: Alignment.center,
-                            width: 75,
-                            height: 50,
-                            image: AssetImage(
-                                "assets/card_brands/${CardBrandHelper.fromId(_selectedCard.brand).image}.png"),
-                            fit: BoxFit.cover,
-                          ),
-                          Text(
-                            _selectedCard.description,
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 22,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          SizedBox(
-                            width: 130,
-                            child: Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    const SizedBox(
-                                      width: 30,
-                                      child: FaIcon(
-                                        FontAwesomeIcons.calendarWeek,
-                                        color: Colors.grey,
-                                        size: 28,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: 100,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          const Text(
-                                            "Fechamento",
-                                            style: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                          Text(
-                                            DateFormat("dd/MMM").format(
-                                                _selectedInvoice.closeDate),
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    const SizedBox(
-                                      width: 30,
-                                      child: FaIcon(
-                                        FontAwesomeIcons.receipt,
-                                        color: Colors.grey,
-                                        size: 28,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: 100,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          const Text(
-                                            "Status",
-                                            style: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                          Text(
-                                            _selectedInvoice.status.description,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(
-                            width: 130,
-                            child: Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    const SizedBox(
-                                      width: 30,
-                                      child: FaIcon(
-                                        FontAwesomeIcons.calendarCheck,
-                                        color: Colors.grey,
-                                        size: 28,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: 100,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          const Text(
-                                            "Vencimento",
-                                            style: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                          Text(
-                                            DateFormat("dd/MMM").format(
-                                                _selectedInvoice.dueDate),
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    const SizedBox(
-                                      width: 30,
-                                      child: FaIcon(
-                                        FontAwesomeIcons.moneyBill,
-                                        color: Colors.grey,
-                                        size: 28,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: 100,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          const Text(
-                                            "Valor",
-                                            style: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                          Text(
-                                            _formatCurrency.format(
-                                                _selectedInvoice.amount),
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.only(bottom: 50),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: _transactionWidget(),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          )
-        ],
+          ],
+        ),
       ),
     );
   }

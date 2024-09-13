@@ -1,48 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class InsertField extends StatefulWidget {
   const InsertField({
     super.key,
-    this.startIcon,
-    this.startImage,
-    this.startText,
-    this.finalIcon,
-    this.hint,
-    this.controller,
-    this.onClick,
-    this.height = 60,
-    this.color,
-    this.finalText,
-    this.startImageIcon,
-    this.finalWidget,
+    required this.icon,
+    required this.hint,
+    required this.onClick,
   });
 
-  final IconData? startIcon;
-  final ImageProvider<Object>? startImage;
-  final ImageProvider<Object>? startImageIcon;
-  final String? startText;
-  final IconData? finalIcon;
-  final String? hint;
-  final TextEditingController? controller;
-  final VoidCallback? onClick;
-  final double height;
-  final Color? color;
-  final String? finalText;
-  final Widget? finalWidget;
+  final IconData icon;
+  final String hint;
+  final VoidCallback onClick;
 
   @override
   InsertFieldState createState() => InsertFieldState();
 }
 
 class InsertFieldState extends State<InsertField> {
-  final FocusNode _focusNode = FocusNode();
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: widget.onClick ?? () => {_focusNode.requestFocus()},
+      onTap: () {
+        FocusScope.of(context).requestFocus(FocusNode());
+        widget.onClick();
+      },
       child: Container(
-        height: widget.height,
+        height: 60,
         decoration: const BoxDecoration(
           border: Border(
             bottom: BorderSide(
@@ -58,108 +42,29 @@ class InsertFieldState extends State<InsertField> {
               children: [
                 Row(
                   children: [
-                    if (widget.startImage != null)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(50),
-                        child: Image(
-                          width: 40,
-                          height: 40,
-                          image: widget.startImage!,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    if (widget.startImageIcon != null)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(50),
-                        child: Container(
-                          height: 40,
-                          width: 40,
-                          color: Colors.blue,
-                          padding: const EdgeInsets.all(8),
-                          child: Image(
-                            image: widget.startImageIcon!,
-                            fit: BoxFit.fill,
-                          ),
-                        ),
-                      ),
                     Padding(
-                      padding: EdgeInsets.only(
-                        right: widget.startImage == null &&
-                                widget.startImageIcon == null
-                            ? 40
-                            : 0,
-                      ),
-                      child: Icon(
-                        widget.startIcon,
+                      padding: const EdgeInsets.only(right: 40),
+                      child: FaIcon(
+                        widget.icon,
                         color: Colors.grey,
                       ),
                     ),
-                    widget.startText != null
-                        ? Text(
-                            widget.startText ?? "",
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 18,
-                            ),
-                          )
-                        : SizedBox(
-                            width: 250,
-                            child: TextField(
-                              focusNode: _focusNode,
-                              controller: widget.controller,
-                              decoration: InputDecoration.collapsed(
-                                hintText: widget.hint,
-                                hintStyle: const TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                              ),
-                              cursorColor: Colors.deepPurple,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                              ),
-                            ),
-                          ),
+                    Text(
+                      widget.hint,
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 18,
+                      ),
+                    ),
                   ],
                 ),
-                Row(
-                  children: [
-                    if (widget.color != null)
-                      Container(
-                        width: 25,
-                        height: 25,
-                        decoration: BoxDecoration(
-                          color: widget.color,
-                          borderRadius: BorderRadius.circular(50),
-                          border: Border.all(
-                            width: 2,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
-                    if (widget.finalText != null)
-                      SizedBox(
-                        width: 25,
-                        height: 25,
-                        child: Text(
-                          widget.finalText!,
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ),
-                    widget.finalWidget ??
-                        Container(
-                          padding: const EdgeInsets.only(left: 20),
-                          child: Icon(
-                            widget.finalIcon,
-                            color: Colors.grey,
-                          ),
-                        ),
-                  ],
-                )
+                Container(
+                  padding: const EdgeInsets.only(left: 20),
+                  child: const FaIcon(
+                    FontAwesomeIcons.chevronRight,
+                    color: Colors.grey,
+                  ),
+                ),
               ],
             ),
           ],

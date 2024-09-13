@@ -1,5 +1,3 @@
-import 'package:cash_manager/exceptions/id_not_found_exception.dart';
-
 enum InvoiceStatus {
   close,
   open,
@@ -40,7 +38,7 @@ class InvoiceStatusHelper {
       case 2:
         return InvoiceStatus.future;
       default:
-        throw IdNotFoundException();
+        throw Exception("Enum id not found");
     }
   }
 }

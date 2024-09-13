@@ -1,20 +1,26 @@
+import 'package:cash_manager/models/enum/image_type.dart';
+import 'package:cash_manager/models/image_data.dart';
+
 class Bank {
-  int? id;
-  String? name;
-  String? icon;
-  String? color;
+  late int id;
+  late String name;
+  late ImageData image;
+  late String color;
 
   Bank({
-    this.id,
-    this.name,
-    this.icon,
-    this.color,
+    required this.id,
+    required this.name,
+    required this.image,
+    required this.color,
   });
 
   Bank.fromMap(Map<String, dynamic> data) {
     id = data['id'];
     name = data['name'];
-    icon = data['icon'];
+    image = ImageData(
+      imagePath: "assets/banks/${data['image']}.png",
+      type: ImageType.image,
+    );
     color = data['color'];
   }
 }
