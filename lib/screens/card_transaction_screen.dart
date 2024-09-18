@@ -4,6 +4,7 @@ import 'package:cash_manager/models/dto/card_transaction_dto.dart';
 import 'package:cash_manager/models/dto/select_image_item.dart';
 import 'package:cash_manager/models/invoice.dart';
 import 'package:cash_manager/models/transaction_category.dart';
+import 'package:cash_manager/services/card_recurrence_transaction_service.dart';
 import 'package:cash_manager/services/card_transaction_service.dart';
 import 'package:cash_manager/services/credit_card_service.dart';
 import 'package:cash_manager/services/invoice_service.dart';
@@ -25,9 +26,11 @@ class CardTransactionScreen extends StatefulWidget {
   const CardTransactionScreen({
     super.key,
     required this.onPop,
+    this.selectedCard,
   });
 
   final Function onPop;
+  final CreditCard? selectedCard;
 
   @override
   CardTransactionScreenState createState() => CardTransactionScreenState();
@@ -43,13 +46,18 @@ class CardTransactionScreenState extends State<CardTransactionScreen> {
   List<CreditCard> _cards = [];
   TransactionCategory? _selectedCategory;
   List<TransactionCategory> _categories = [];
-  bool _reccurence = false;
+  bool _recurrence = false;
+
+  Invoice? _selectedInvoice;
 
   late FToast _fToast;
 
   @override
   void initState() {
     super.initState();
+    setState(() {
+      _selectedCard = widget.selectedCard;
+    });
     _initData();
     _fToast = FToast();
     _fToast.init(context);
@@ -62,6 +70,7 @@ class CardTransactionScreenState extends State<CardTransactionScreen> {
   }
 
   _initData() async {
+    await _selectInvoice();
     List<CreditCard> tempCards = await CreditCardService.findAll();
     List<TransactionCategory> tempCategories =
         await TransactionCategoryService.findByType(false);
@@ -112,13 +121,23 @@ class CardTransactionScreenState extends State<CardTransactionScreen> {
       setState(() {
         _selectedDate = results[0]!;
       });
+      _selectInvoice();
     }
+  }
+
+  _selectInvoice() async {
+    Invoice invoice = await InvoiceService.findByCreditCardAndDate(
+        _selectedCard!, _selectedDate);
+    setState(() {
+      _selectedInvoice = invoice;
+    });
   }
 
   _selectCard(dynamic card) {
     setState(() {
       _selectedCard = card;
     });
+    _selectInvoice();
     Navigator.pop(context);
   }
 
@@ -131,7 +150,7 @@ class CardTransactionScreenState extends State<CardTransactionScreen> {
 
   _setReccurence(bool reccurence) {
     setState(() {
-      _reccurence = reccurence;
+      _recurrence = reccurence;
     });
   }
 
@@ -159,7 +178,7 @@ class CardTransactionScreenState extends State<CardTransactionScreen> {
     );
   }
 
-  _saveTransaction() async {
+  _saveTransaction() {
     if (_transactionAmount == 0) {
       _showToast("Selecione o valor da transação");
     } else if (_descriptionController.text.isEmpty) {
@@ -169,17 +188,18 @@ class CardTransactionScreenState extends State<CardTransactionScreen> {
     } else if (_selectedCategory == null) {
       _showToast("Selecione a categoria");
     } else {
-      Invoice invoice = await InvoiceService.findByCreditCardAndDate(
-          _selectedCard!, _selectedDate);
       CardTransactionDTO cardTransaction = CardTransactionDTO(
         description: _descriptionController.text.trim(),
         date: _selectedDate,
         amount: _transactionAmount,
         categoryId: _selectedCategory!.id,
-        invoiceId: invoice.id,
-        recurrence: _reccurence,
+        invoiceId: _selectedInvoice!.id,
+        creditCardId: _selectedInvoice!.creditCard.id,
       );
       CardTransactionService.createTransaction(cardTransaction);
+      if (_recurrence) {
+        CardRecurrenceTransactionService.createTransaction(cardTransaction);
+      }
       Navigator.pop(context);
     }
   }
@@ -268,7 +288,7 @@ class CardTransactionScreenState extends State<CardTransactionScreen> {
                         InsertSlideField(
                           icon: FontAwesomeIcons.receipt,
                           hint: "Criar recorrência",
-                          value: _reccurence,
+                          value: _recurrence,
                           onClick: _setReccurence,
                         ),
                       ],

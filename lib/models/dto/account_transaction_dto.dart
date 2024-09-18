@@ -19,7 +19,7 @@ class AccountTransactionDTO {
     return {
       'description': description,
       'amount': amount,
-      'type': type,
+      'type': type ? 1 : 0,
       'date': date.microsecondsSinceEpoch,
       'category_id': categoryId,
       'account_id': accountId,

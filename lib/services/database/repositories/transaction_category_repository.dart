@@ -17,8 +17,7 @@ class TransactionCategoryRepository {
     return result?[0];
   }
 
-  static Future<List<Map<String, dynamic>>> findByType(
-      bool categoryType) async {
+  static Future<List<Map<String, dynamic>>> findByType(int categoryType) async {
     Database? db = await DatabaseConnection.instance.database;
     List<Map<String, dynamic>>? result = await db?.query(
       _tableName,
@@ -33,5 +32,18 @@ class TransactionCategoryRepository {
     }
 
     return result;
+  }
+
+  static Future<Map<String, dynamic>?> findByName(String name) async {
+    Database? db = await DatabaseConnection.instance.database;
+    List<Map<String, dynamic>>? result = await db?.query(
+      _tableName,
+      where: 'name = ?',
+      whereArgs: [
+        name,
+      ],
+    );
+
+    return result?[0];
   }
 }

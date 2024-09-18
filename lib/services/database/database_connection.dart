@@ -1,15 +1,14 @@
+import 'package:cash_manager/services/database/versioning/db_version_1.dart';
 import 'package:cash_manager/services/database/versioning/db_version_2.dart';
 import 'package:cash_manager/services/database/versioning/db_version_3.dart';
 import 'package:cash_manager/services/database/versioning/db_version_4.dart';
-
-import 'versioning/db_version_1.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DatabaseConnection {
   static DatabaseConnection? _instance;
 
   static Database? _database;
-  static const int _databaseVersion = 4;
+  static const int _databaseVersion = 5;
   static const String _databaseName = 'cash_manager.db';
 
   Future<Database?> get database async {

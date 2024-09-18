@@ -1,9 +1,12 @@
 import 'package:cash_manager/models/credit_card.dart';
+import 'package:cash_manager/models/enum/invoice_status.dart';
 import 'package:cash_manager/models/invoice.dart';
 import 'package:cash_manager/screens/card_transaction_list_screen.dart';
+import 'package:cash_manager/screens/card_transaction_screen.dart';
 import 'package:cash_manager/screens/credit_card_screen.dart';
 import 'package:cash_manager/widgets/box.dart';
 import 'package:cash_manager/widgets/empty_box.dart';
+import 'package:cash_manager/widgets/pay_invoice.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
@@ -105,16 +108,57 @@ class CardItemBoxState extends State<CardItemBox> {
                 fontSize: 16,
               ),
             ),
-            IconButton(
-              onPressed: () => {},
-              icon: const Icon(
-                FontAwesomeIcons.plus,
-                color: Colors.purple,
-                size: 22,
-              ),
-            ),
+            _getFinalButton(card, invoice),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _getFinalButton(CreditCard card, Invoice invoice) {
+    if (invoice.status == InvoiceStatus.close) {
+      if (invoice.paid) {
+        return IconButton(
+          onPressed: () => {},
+          icon: const FaIcon(
+            FontAwesomeIcons.check,
+            color: Colors.green,
+            size: 22,
+          ),
+        );
+      }
+
+      return IconButton(
+        onPressed: () => showDialog<String>(
+          context: context,
+          builder: (BuildContext context) => PayInvoice(
+            onPop: widget.onPop,
+            selectedInvoice: invoice,
+          ),
+        ),
+        icon: const FaIcon(
+          FontAwesomeIcons.moneyBillTransfer,
+          color: Colors.red,
+          size: 22,
+        ),
+      );
+    }
+    return IconButton(
+      onPressed: () => {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CardTransactionScreen(
+              selectedCard: card,
+              onPop: widget.onPop,
+            ),
+          ),
+        )
+      },
+      icon: const FaIcon(
+        FontAwesomeIcons.plus,
+        color: Colors.purple,
+        size: 22,
       ),
     );
   }

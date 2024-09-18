@@ -11,9 +11,18 @@ class TransactionCategoryService {
     return TransactionCategory.fromMap(categoryResponse);
   }
 
+  static Future<TransactionCategory> findByName(String name) async {
+    Map<String, dynamic>? categoryResponse =
+        await TransactionCategoryRepository.findByName(name);
+    if (categoryResponse == null) {
+      throw Exception("Category not found");
+    }
+    return TransactionCategory.fromMap(categoryResponse);
+  }
+
   static Future<List<TransactionCategory>> findByType(bool type) async {
     List<Map<String, dynamic>> categoryResponse =
-        await TransactionCategoryRepository.findByType(type);
+        await TransactionCategoryRepository.findByType(type ? 1 : 0);
 
     List<TransactionCategory> categories = [];
     for (Map<String, dynamic> categoryItem in categoryResponse) {

@@ -1,27 +1,28 @@
-class CardTransactionDTO {
+class CardRecurrenceTransactionDTO {
   String description;
-  DateTime date;
+  int day;
   double amount;
+  DateTime lastDateCreated;
   int categoryId;
-  int invoiceId;
   int creditCardId;
 
-  CardTransactionDTO({
+  CardRecurrenceTransactionDTO({
     required this.description,
-    required this.date,
+    required this.day,
     required this.amount,
+    required this.lastDateCreated,
     required this.categoryId,
-    required this.invoiceId,
     required this.creditCardId,
   });
 
   Map<String, Object?> toMap() {
     return {
       'description': description,
-      'date': date.microsecondsSinceEpoch,
+      'day': day,
       'amount': amount,
+      'last_date_created': lastDateCreated.microsecondsSinceEpoch,
       'category_id': categoryId,
-      'invoice_id': invoiceId,
+      'card_id': categoryId,
     };
   }
 }

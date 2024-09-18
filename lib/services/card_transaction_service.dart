@@ -8,7 +8,7 @@ import 'package:cash_manager/services/invoice_service.dart';
 class CardTransactionService {
   static Future<void> createTransaction(CardTransactionDTO transaction) async {
     await CardTransactionRepository.create(transaction);
-    InvoiceService.addBalance(transaction.invoiceId, transaction.amount);
+    await InvoiceService.addBalance(transaction.invoiceId, transaction.amount);
   }
 
   static Future<List<CardTransaction>> getTransactionsByInvoice(
@@ -35,7 +35,12 @@ class CardTransactionService {
 
     List<CardTransaction> transactions = [];
     for (Map<String, dynamic> transactionItem in transactionResponse) {
-      transactions.add(CardTransaction.fromMap(transactionItem));
+      CardTransaction transaction = CardTransaction.fromMap(transactionItem);
+      transaction.category = await TransactionCategoryService.findById(
+          transactionItem['category_id']);
+      transaction.invoice =
+          await InvoiceService.findById(transactionItem['invoice_id']);
+      transactions.add(transaction);
     }
 
     return transactions;

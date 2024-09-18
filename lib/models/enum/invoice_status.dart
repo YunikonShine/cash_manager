@@ -23,7 +23,7 @@ extension InvoiceStatusExtension on InvoiceStatus {
       case InvoiceStatus.open:
         return "Aberta";
       case InvoiceStatus.future:
-        return "Aberta";
+        return "Futura";
     }
   }
 }

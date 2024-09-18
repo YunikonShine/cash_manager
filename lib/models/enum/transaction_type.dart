@@ -33,7 +33,7 @@ extension TransactionTypeExtension on TransactionType {
 class TransactionTypeHelper {
   static TransactionType fromString(String? value) {
     for (TransactionType type in TransactionType.values) {
-      if (type.toString() == value) {
+      if (type.name == value) {
         return type;
       }
     }

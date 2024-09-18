@@ -62,7 +62,6 @@ class BottomBar extends StatelessWidget {
                 GestureDetector(
                   onTap: () {
                     if (selectedIndex != 1) {
-                      Navigator.pop(context);
                       Navigator.push(
                         context,
                         MaterialPageRoute(

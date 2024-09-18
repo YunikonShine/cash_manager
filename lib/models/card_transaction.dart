@@ -6,7 +6,6 @@ class CardTransaction {
   late String description;
   late DateTime date;
   late double amount;
-  late bool recurrence;
   late TransactionCategory category;
   late Invoice invoice;
 
@@ -15,7 +14,6 @@ class CardTransaction {
     required this.description,
     required this.date,
     required this.amount,
-    required this.recurrence,
     required this.category,
     required this.invoice,
   });
@@ -25,6 +23,5 @@ class CardTransaction {
     description = data['description'];
     date = DateTime.fromMicrosecondsSinceEpoch(data['date']);
     amount = data['amount'];
-    recurrence = data['recurrence'] == 1;
   }
 }

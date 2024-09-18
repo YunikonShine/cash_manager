@@ -7,6 +7,7 @@ class Invoice {
   late DateTime closeDate;
   late DateTime dueDate;
   late double amount;
+  late bool paid;
   late InvoiceStatus status;
   late CreditCard creditCard;
 
@@ -16,6 +17,7 @@ class Invoice {
     required this.closeDate,
     required this.dueDate,
     required this.amount,
+    required this.paid,
     required this.status,
     required this.creditCard,
   });
@@ -26,6 +28,7 @@ class Invoice {
     closeDate = DateTime.fromMicrosecondsSinceEpoch(data['close_date']);
     dueDate = DateTime.fromMicrosecondsSinceEpoch(data['due_date']);
     amount = data['amount'];
+    paid = data['paid'] == 1;
     status = InvoiceStatusHelper.fromId(data['status']);
   }
 
@@ -35,6 +38,7 @@ class Invoice {
       'close_date': closeDate.microsecondsSinceEpoch,
       'due_date': dueDate.microsecondsSinceEpoch,
       'amount': amount,
+      'paid': paid ? 1 : 0,
       'status': status.id,
       'card_id': creditCard.id,
     };

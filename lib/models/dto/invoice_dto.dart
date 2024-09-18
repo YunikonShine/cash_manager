@@ -5,6 +5,7 @@ class InvoiceDTO {
   double amount;
   int status;
   int cardId;
+  bool paid;
 
   InvoiceDTO({
     required this.openDate,
@@ -13,6 +14,7 @@ class InvoiceDTO {
     required this.amount,
     required this.status,
     required this.cardId,
+    required this.paid,
   });
 
   Map<String, Object?> toMap() {
@@ -23,6 +25,7 @@ class InvoiceDTO {
       'amount': amount,
       'status': status,
       'card_id': cardId,
+      'paid': paid ? 1 : 0,
     };
   }
 }

@@ -199,7 +199,7 @@ class CardTransactionListScreenState extends State<CardTransactionListScreen> {
                               ),
                             ),
                             Text(
-                              "${transaction.category.name} | ${transaction.description}",
+                              transaction.category.name,
                               style: const TextStyle(
                                 color: Colors.grey,
                                 fontSize: 16,

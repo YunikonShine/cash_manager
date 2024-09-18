@@ -19,7 +19,7 @@ class AccountTransactionService {
       DateTime date, bool type) async {
     List<Map<String, dynamic>> transactionResponse =
         await AccountTransactionRepository.getMonthTransactionsByType(
-            date, type);
+            date, type ? 1 : 0);
 
     List<AccountTransaction> transactions = [];
     for (Map<String, dynamic> transactionItem in transactionResponse) {

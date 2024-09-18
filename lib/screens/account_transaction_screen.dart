@@ -24,10 +24,12 @@ class AccountTransactionScreen extends StatefulWidget {
     super.key,
     required this.type,
     required this.onPop,
+    this.selectedAccount,
   });
 
   final bool type;
   final Function onPop;
+  final Account? selectedAccount;
 
   @override
   AccountTransactionScreenState createState() =>
@@ -54,6 +56,9 @@ class AccountTransactionScreenState extends State<AccountTransactionScreen> {
   @override
   void initState() {
     super.initState();
+    setState(() {
+      _selectedAccount = widget.selectedAccount;
+    });
     _initData();
     _fToast = FToast();
     _fToast.init(context);

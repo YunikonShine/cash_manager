@@ -1,5 +1,6 @@
 import 'package:cash_manager/models/account.dart';
 import 'package:cash_manager/screens/account_screen.dart';
+import 'package:cash_manager/screens/account_transaction_screen.dart';
 import 'package:cash_manager/widgets/box.dart';
 import 'package:cash_manager/widgets/empty_box.dart';
 import 'package:flutter/material.dart';
@@ -147,7 +148,18 @@ class AccountItemBoxState extends State<AccountItemBox> {
                           ],
                         ),
                         IconButton(
-                          onPressed: () => {},
+                          onPressed: () => {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AccountTransactionScreen(
+                                  selectedAccount: item,
+                                  type: false,
+                                  onPop: widget.onPop,
+                                ),
+                              ),
+                            )
+                          },
                           icon: const Icon(
                             FontAwesomeIcons.plus,
                             color: Colors.purple,

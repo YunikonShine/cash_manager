@@ -14,7 +14,7 @@ class AccountTransactionRepository {
   }
 
   static Future<List<Map<String, dynamic>>> getMonthTransactionsByType(
-      DateTime date, bool type) async {
+      DateTime date, int type) async {
     Database? db = await DatabaseConnection.instance.database;
 
     int firstDay = DateTime(date.year, date.month, 1).microsecondsSinceEpoch;

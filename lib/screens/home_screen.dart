@@ -4,6 +4,7 @@ import 'package:cash_manager/models/credit_card.dart';
 import 'package:cash_manager/models/invoice.dart';
 import 'package:cash_manager/services/account_service.dart';
 import 'package:cash_manager/services/account_transaction_service.dart';
+import 'package:cash_manager/services/card_recurrence_transaction_service.dart';
 import 'package:cash_manager/services/credit_card_service.dart';
 import 'package:cash_manager/services/invoice_service.dart';
 import 'package:cash_manager/widgets/account_item_box.dart';
@@ -11,6 +12,7 @@ import 'package:cash_manager/widgets/balance.dart';
 import 'package:cash_manager/widgets/bottom_bar.dart';
 import 'package:cash_manager/widgets/floating_menu_button.dart';
 import 'package:cash_manager/widgets/card_item_box.dart';
+import 'package:cash_manager/widgets/overdue_invoice.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -23,6 +25,7 @@ class HomeScreen extends StatefulWidget {
 class HomeScreenState extends State<HomeScreen> {
   Future<List<String>> _controller = Future.value([]);
 
+  List<Invoice> _invoices = [];
   List<Account> _accounts = [];
   Map<CreditCard, Invoice> _cards = {};
 
@@ -36,10 +39,16 @@ class HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _pullRefresh();
+    _initData();
+  }
+
+  _initData() async {
+    await CardRecurrenceTransactionService.createMonthlyRecurrence();
+    await _pullRefresh();
   }
 
   Future<void> _pullRefresh() async {
+    List<Invoice> freshInvoice = await InvoiceService.findClosedAndUnpaid();
     List<Account> freshAccounts = await AccountService.findAll();
     List<CreditCard> freshCards = await CreditCardService.findAll();
 
@@ -55,6 +64,7 @@ class HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       _controller = Future.value([""]);
+      _invoices = freshInvoice;
       _accounts = freshAccounts;
       _cards = cardInvoice;
       _accountIncome = income;
@@ -138,6 +148,10 @@ class HomeScreenState extends State<HomeScreen> {
                       accountTotal: _accountTotal,
                       selectedDate: _selectedDate,
                       setDate: _setDate,
+                    ),
+                    OverdueInvoice(
+                      invoices: _invoices,
+                      onPop: _pullRefresh,
                     ),
                     AccountItemBox(
                       accounts: _accounts,
